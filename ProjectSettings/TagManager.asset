@@ -5,6 +5,8 @@ TagManager:
   serializedVersion: 3
   tags:
   - Jar
+  - Button
+  - Water
   layers:
   - Default
   - TransparentFX
