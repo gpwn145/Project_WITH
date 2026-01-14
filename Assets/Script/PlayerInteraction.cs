@@ -1,9 +1,10 @@
-﻿using System;
+﻿using Photon.Pun;
+using System;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.Windows;
 
-public partial class Player : MonoBehaviour
+public partial class PlayerScript : MonoBehaviourPunCallbacks
 {
     private GameObject _target;
     private GameObject _hand;
@@ -11,7 +12,7 @@ public partial class Player : MonoBehaviour
     private float _input;
     private bool _beforeInput;
 
-    public static event Action<Player> OnGrab;
+    public static event Action<PlayerScript> OnGrab;
 
     public GameObject Hand => _hand;
 
@@ -52,6 +53,8 @@ public partial class Player : MonoBehaviour
 
     private void OnInteraction(InputAction.CallbackContext ctx)
     {
+        if (!photonView.IsMine) return;
+
         _input = ctx.ReadValue<float>();
         bool pressed = (_input > 0.5f);
 
@@ -96,6 +99,7 @@ public partial class Player : MonoBehaviour
         jarRigid.freezeRotation = false;
 
         jarColl.gameObject.SetActive(false);
+        jarColl.gameObject.SetActive(true);
 
         _hand.transform.SetParent(gameObject.transform, false);
         _hand.transform.position = _jarPos.transform.position;
@@ -112,6 +116,7 @@ public partial class Player : MonoBehaviour
         jarRigid.detectCollisions = true;
         jarRigid.freezeRotation = false;
 
+        jarColl.gameObject.SetActive(false);
         jarColl.gameObject.SetActive(true);
 
         _hand.transform.SetParent(null);

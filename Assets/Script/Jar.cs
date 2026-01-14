@@ -1,5 +1,6 @@
 ﻿using System;
 using UnityEngine;
+using UnityEngine.InputSystem.LowLevel;
 
 public class Jar : MonoBehaviour
 {
@@ -10,14 +11,11 @@ public class Jar : MonoBehaviour
     private int _currentHP;
     private float _currentWaterLv;
 
-    public static event Action OnDestroyJar;
-    public event Action<Jar> OnWaterLV;
+    public static event Action<GameObject> OnDestroyJar;
+    public static event Action<Jar> OnWaterLV;
 
     public float MaxWaterLv => _maxWaterLv;
     public float CurrentWaterLv => _currentWaterLv;
-
-
-
 
     private void Awake()
     {
@@ -34,35 +32,43 @@ public class Jar : MonoBehaviour
 
     private void OnCollisionEnter(Collision collision)
     {
-        if(collision.gameObject.tag != "Player")
+        if (collision.gameObject.tag == "Player")
         {
-            DestroyJar();
-            _currentHP -= 1;
-            Debug.Log($"항아리 현재 내구도 {_currentHP}/{_maxHp}");
+            return;
         }
+        if (collision.gameObject.tag == "JarSafeZone")
+        {
+            return;
+        }
+
+        DestroyJar(collision.gameObject);
+        _currentHP -= 1;
+        Debug.Log($"항아리 현재 내구도 {_currentHP}/{_maxHp}");
+
+
     }
 
     private void OnTriggerEnter(Collider other)
     {
-        if(other.gameObject.tag == "Respawn")
+        if (other.gameObject.tag == "Respawn")
         {
             _currentHP = 0;
-            DestroyJar();
+            DestroyJar(other.gameObject);
         }
     }
 
-    private void DestroyJar()
+    private void DestroyJar(GameObject gameObject)
     {
         if (_currentHP <= 1)
         {
             Destroy(gameObject);
-            OnDestroyJar.Invoke();
+            OnDestroyJar.Invoke(gameObject);
         }
     }
 
     private void LeakWater()
     {
-        if (_currentWaterLv >= 1000f )
+        if (_currentWaterLv >= 1000f)
         {
             _currentWaterLv -= 4000f * Time.deltaTime;
         }
