@@ -1,17 +1,22 @@
 ﻿using System;
+using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
 public partial class Player : MonoBehaviour
 {
-    [Header("이동속도")]
-    [SerializeField, Range(0f, 10f)] private float _moveSpeed = 5f;
+    [Header("이동 힘")]
+    [SerializeField, Range(5f, 20f)] private float _moveSpeed = 10f;
     [Header("회전속도")]
     [SerializeField, Range(0f, 10f)] private float _rotateSpeed = 5f;
     [Header("내려놓는 거리")]
     [SerializeField, Range(0f, 10f)] private float _putPos = 1f;
     [Header("밀려나는 힘")]
     [SerializeField, Range(0f, 10f)] private float _backForce = 3f;
+    [Header("리스폰 지역")]
+    [SerializeField] private GameObject _rewpawnPos;
+    [Header("프레젠터 버튼")]
+    [SerializeField] private Presenter _presenter;
     [SerializeField] GameObject _jarPos;
 
     private Vector3 moveDirection;
@@ -60,6 +65,7 @@ public partial class Player : MonoBehaviour
             if (_rigidbody.linearVelocity.magnitude < 0.1f)
             {
                 isBack = false;
+                _rigidbody.angularVelocity = Vector3.zero;
                 _moveAction.Enable();
                 Debug.Log("입력 활성화");
             }
