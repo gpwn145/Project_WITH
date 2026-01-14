@@ -17,18 +17,18 @@
                 },
                 {
                     "name": "Hold",
-                    "type": "Button",
+                    "type": "PassThrough",
                     "id": "f07d7850-569d-494d-be4f-6a44bdcf3dae",
-                    "expectedControlType": "",
+                    "expectedControlType": "Button",
                     "processors": "",
                     "interactions": "",
                     "initialStateCheck": false
                 },
                 {
                     "name": "Throw",
-                    "type": "Button",
+                    "type": "PassThrough",
                     "id": "751847be-54a2-458c-8193-1416613baf92",
-                    "expectedControlType": "",
+                    "expectedControlType": "Button",
                     "processors": "",
                     "interactions": "",
                     "initialStateCheck": false
