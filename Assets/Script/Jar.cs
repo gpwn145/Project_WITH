@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using UnityEngine;
 using UnityEngine.InputSystem.LowLevel;
 
@@ -10,6 +11,8 @@ public class Jar : MonoBehaviour
     [SerializeField] private float _maxWaterLv = 5000f;
     private int _currentHP;
     private float _currentWaterLv;
+    private Presenter _presenter;
+    private bool _isLeakTime;
 
     public static event Action<GameObject> OnDestroyJar;
     public static event Action<Jar> OnWaterLV;
@@ -23,29 +26,26 @@ public class Jar : MonoBehaviour
         _maxWaterLv = 5000f;
         _currentHP = _maxHp;
         _currentWaterLv = 0;
+        _presenter = GameObject.Find("Canvas").GetComponent<Presenter>();
     }
 
     private void FixedUpdate()
     {
-        LeakWater();
+        if (_isLeakTime == true)
+        {
+            LeakWater();
+        }
+
     }
 
     private void OnCollisionEnter(Collision collision)
     {
-        if (collision.gameObject.tag == "Player")
+        if (collision.gameObject.tag == "Floor" || collision.gameObject.tag == "Hurdle")
         {
-            return;
+            DestroyJar(collision.gameObject);
+            _currentHP -= 1;
+            Debug.Log($"항아리 현재 내구도 {_currentHP}/{_maxHp}");
         }
-        if (collision.gameObject.tag == "JarSafeZone")
-        {
-            return;
-        }
-
-        DestroyJar(collision.gameObject);
-        _currentHP -= 1;
-        Debug.Log($"항아리 현재 내구도 {_currentHP}/{_maxHp}");
-
-
     }
 
     private void OnTriggerEnter(Collider other)
@@ -66,7 +66,9 @@ public class Jar : MonoBehaviour
         }
     }
 
-    private void LeakWater()
+
+
+    public void LeakWater()
     {
         if (_currentWaterLv >= 1000f)
         {
@@ -74,9 +76,15 @@ public class Jar : MonoBehaviour
         }
     }
 
+    IEnumerator LeakWaterTimer(bool isPressed)
+    {
+        yield return new WaitForSeconds(2f);
+        _isLeakTime = isPressed;
+    }
+
     public void FillWater(bool isPressed)
     {
-        if (isPressed)
+        if (isPressed == true)
         {
             if (_currentWaterLv == _maxWaterLv)
             {
@@ -87,6 +95,13 @@ public class Jar : MonoBehaviour
             Debug.Log($"항아리 물 {_currentWaterLv}/{_maxWaterLv}");
             OnWaterLV.Invoke(this);
 
+            //물샘 없음으로
+            _isLeakTime = false;
+        }
+        //물 공급 중단되면 물새기 타이머 시작
+        else if (isPressed == false)
+        {
+            StartCoroutine(LeakWaterTimer(true));
         }
     }
 }
