@@ -1,107 +1,242 @@
 ﻿using System;
 using System.Collections;
 using UnityEngine;
-using UnityEngine.InputSystem.LowLevel;
+using Photon.Pun;
 
-public class Jar : MonoBehaviour
+public enum JarState
+{
+    None,
+    WaterFilling,
+    LeakTime
+}
+
+public partial class Jar : MonoBehaviourPunCallbacks, IPunObservable
 {
     [Header("내구도")]
     [SerializeField] private int _maxHp = 5;
-    [Header("용량(ml)")]
-    [SerializeField] private float _maxWaterLv = 5000f;
+    [Header("용량(L)")]
+    [SerializeField] private float _maxWaterLv = 5f;
+    [Header("상태")]
+    [SerializeField] public JarState _jarState = JarState.None;
+    [Header("프레젠터")]
+    [SerializeField] private Presenter _presenter;
     private int _currentHP;
     private float _currentWaterLv;
-    private Presenter _presenter;
-    private bool _isLeakTime;
 
-    public static event Action<GameObject> OnDestroyJar;
-    public static event Action<Jar> OnWaterLV;
+    //private bool _isLeakTime = false;
+    //private bool _isWater = false;
+    private bool _isGodMode;
+    //private bool _isCoroutineStart = false;
+    private Rigidbody _rigid;
+    private Coroutine prograssCor;
+
+    const int LAYER_JarSpawn = 6;
+    const int LAYER_JarPlayer = 7;
+    const int LAYER_JarPutDown = 8;
+
+    public event Action<Jar> OnWaterLV;
 
     public float MaxWaterLv => _maxWaterLv;
     public float CurrentWaterLv => _currentWaterLv;
+    public int MaxHp => _maxHp;
 
     private void Awake()
     {
         _maxHp = 5;
-        _maxWaterLv = 5000f;
+        _maxWaterLv = 5f;
         _currentHP = _maxHp;
         _currentWaterLv = 0;
-        _presenter = GameObject.Find("Canvas").GetComponent<Presenter>();
+        gameObject.tag = "Jar";
+        gameObject.layer = LAYER_JarSpawn;
+        GodMode(true);
+        _rigid = GetComponent<Rigidbody>();
+        gameObject.GetComponent<PhotonView>().TransferOwnership(PhotonNetwork.MasterClient);
+        //_presenter = GameObject.Find("InGameUI").GetComponent<Presenter>();
     }
 
-    private void FixedUpdate()
+    private void Start()
     {
-        if (_isLeakTime == true)
+        _presenter = GameObject.Find("InGameUI").GetComponent<Presenter>();
+        PlayerScript.OnFillStop += FillStop;
+    }
+
+    private void Update()
+    {
+        if (PhotonNetwork.IsMasterClient == true)
         {
-            LeakWater();
+            if (_jarState == JarState.LeakTime)
+            {
+                LeakWater();
+            }
+
+            if (_jarState == JarState.WaterFilling)
+            {
+                FillWater();
+            }
+        }
+    }
+
+    public void FillStop()
+    {
+        SendStateRPC(JarState.None);
+    }
+
+    public void SendStateRPC(JarState state)
+    {
+        if (PhotonNetwork.IsMasterClient == false)
+        {
+            return;
         }
 
+        _jarState = state;
+
+        photonView.RPC(
+                    nameof(RPC_JarState),
+                    RpcTarget.Others,
+                    state
+                    );
     }
 
     private void OnCollisionEnter(Collision collision)
     {
-        if (collision.gameObject.tag == "Floor" || collision.gameObject.tag == "Hurdle")
+        if (collision.gameObject.tag == "Floor" || collision.gameObject.tag == "Hurdle" || collision.gameObject.tag == "Player")
         {
-            DestroyJar(collision.gameObject);
-            _currentHP -= 1;
-            Debug.Log($"항아리 현재 내구도 {_currentHP}/{_maxHp}");
+            if (collision.gameObject.layer == LAYER_JarPlayer)
+            {
+                return;
+            }
+
+            Debug.Log($"항아리 무적상태 : {_isGodMode}");
+            Debug.Log($"항아리 레이어상태 : {gameObject.layer}");
+            //바닥에 내려져 있을 때, 무적이 아닐때
+            if (gameObject.layer == LAYER_JarPutDown && _isGodMode == false)
+            {
+                Damaged();
+            }
         }
+
+        if (collision.gameObject.tag == "Out")
+        {
+            Master_DestroyJar(gameObject);
+            Debug.Log("항아리 파괴");
+        }
+    }
+
+    public void Damaged()
+    {
+        if (PhotonNetwork.IsMasterClient == false)
+        {
+            return;
+        }
+
+        _currentHP -= 1;
+
+        if (_currentHP < 1)
+        {
+            Master_DestroyJar(gameObject);
+            return;
+        }
+
+        Debug.Log($"항아리 현재 내구도 {_currentHP}/{_maxHp}");
+        GodMode(true);
+        StartCoroutine(JarGodModeTimer());
+        Debug.Log("무적타이머 시작");
+    }
+
+    public void GodMode(bool isGad)
+    {
+        _isGodMode = isGad;
+        Debug.Log($"항아리 무적상태 : {_isGodMode} 설정");
     }
 
     private void OnTriggerEnter(Collider other)
     {
-        if (other.gameObject.tag == "Respawn")
+        if (other.gameObject.tag == "Water")
         {
-            _currentHP = 0;
-            DestroyJar(other.gameObject);
+            if (PhotonNetwork.IsMasterClient == false)
+                return;
+
+            if (prograssCor != null)
+            {
+                StopCoroutine(prograssCor);
+            }
+            SendStateRPC(JarState.WaterFilling);
+            Debug.Log("물받기 시작");
+        }
+
+        if (other.gameObject.tag == "Goal")
+        {
+            Master_GoalWater(gameObject);
+            Debug.Log("우물에 던짐");
         }
     }
 
-    private void DestroyJar(GameObject gameObject)
+
+
+    private void OnTriggerExit(Collider other)
     {
-        if (_currentHP <= 1)
+        if (other.gameObject.tag == "Water")
         {
-            Destroy(gameObject);
-            OnDestroyJar.Invoke(gameObject);
+            if (PhotonNetwork.IsMasterClient == false)
+                return;
+
+            if (_jarState == JarState.WaterFilling)
+            {
+                SendStateRPC(JarState.None);
+                Debug.Log("물받기 중단");
+
+                if (prograssCor != null)
+                {
+                    StopCoroutine(prograssCor);
+                }
+                prograssCor = StartCoroutine(LeakWaterTimer());
+            }
         }
     }
 
-
-
-    public void LeakWater()
-    {
-        if (_currentWaterLv >= 1000f)
-        {
-            _currentWaterLv -= 4000f * Time.deltaTime;
-        }
-    }
-
-    IEnumerator LeakWaterTimer(bool isPressed)
+    IEnumerator LeakWaterTimer()
     {
         yield return new WaitForSeconds(2f);
-        _isLeakTime = isPressed;
+        SendStateRPC(JarState.LeakTime);
+        Debug.Log("물새기 시작");
+        prograssCor = null;
     }
 
-    public void FillWater(bool isPressed)
+    public IEnumerator JarGodModeTimer()
     {
-        if (isPressed == true)
-        {
-            if (_currentWaterLv == _maxWaterLv)
-            {
-                Debug.Log($"항아리 물 {_currentWaterLv}/{_maxWaterLv}");
-                return;
-            }
-            _currentWaterLv += 5000f * Time.deltaTime;
-            Debug.Log($"항아리 물 {_currentWaterLv}/{_maxWaterLv}");
-            OnWaterLV.Invoke(this);
+        yield return new WaitForSeconds(1f);
+        GodMode(false);
+    }
 
-            //물샘 없음으로
-            _isLeakTime = false;
-        }
-        //물 공급 중단되면 물새기 타이머 시작
-        else if (isPressed == false)
+    public void FillWater()
+    {
+        if (PhotonNetwork.IsMasterClient == false)
+            return;
+
+        if (gameObject.layer != LAYER_JarPlayer)
+            return;
+
+        if (_currentWaterLv >= _maxWaterLv)
         {
-            StartCoroutine(LeakWaterTimer(true));
+            Debug.Log($"항아리 물 {_currentWaterLv}/{_maxWaterLv}");
+            return;
+        }
+        _currentWaterLv += 1f * Time.deltaTime;
+        _currentWaterLv = Mathf.Clamp(_currentWaterLv, 0f, _maxWaterLv);
+        Debug.Log($"항아리 물 {_currentWaterLv}/{_maxWaterLv}");
+    }
+    public void LeakWater()
+    {
+        if (PhotonNetwork.IsMasterClient == false)
+            return;
+
+        _currentWaterLv -= 1f * Time.deltaTime;
+        _currentWaterLv = Mathf.Clamp(_currentWaterLv, 0f, _maxWaterLv);
+
+        if (_currentWaterLv <= 1f)
+        {
+            SendStateRPC(JarState.None);
         }
     }
+
 }
