@@ -8,6 +8,11 @@ TagManager:
   - Button
   - Water
   - JarSafeZone
+  - Hurdle
+  - JarGrapRange
+  - Floor
+  - Out
+  - Goal
   layers:
   - Default
   - TransparentFX
@@ -15,9 +20,9 @@ TagManager:
   - 
   - Water
   - UI
-  - 
-  - 
-  - 
+  - JarSpwan
+  - JarPlayer
+  - JarPutDown
   - 
   - 
   - 

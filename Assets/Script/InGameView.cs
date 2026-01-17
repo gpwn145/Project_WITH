@@ -3,38 +3,40 @@ using UnityEngine.UI;
 
 public class InGameView : MonoBehaviour
 {
-    [Header("물 수위")]
-    [SerializeField] private Text _waterLVText;
+    [Header("항아리 물 수위")]
+    [SerializeField] private Text _jarWaterLVText;
     [Header("깨진 항아리")]
     [SerializeField] private Text _destroyJarText;
-    [Header("프레젠터")]
+    [Header("우물 물 정보")]
+    [SerializeField] private Text _wellWaterLVText;
+    [Header("스테이지 정보")]
+    [SerializeField] private Text _stageInfoText;
+    [Header("프레젠터 스크립트")]
     [SerializeField] private Presenter _presenter;
 
     private void Awake()
     {
-        _waterLVText.text = "";
-        _destroyJarText.text = "";
+        _jarWaterLVText.text = "0.0 / 0.0";
+        _destroyJarText.text = "깨진 항아리 : 0";
+        _wellWaterLVText.text = "0 %";
+        _stageInfoText.text = "0 스테이지 : 테스트맵";
     }
 
-    private void Start()
+    public void UpdateJarWater(float current, float max)
     {
-        Jar.OnDestroyJar += UpdateJar;
-        Jar.OnWaterLV += UpdateWater;
+        _jarWaterLVText.text = $"{current} / {max}";
     }
 
-    private void UpdateWater(Jar jar)
+    public void UpdateJar(int brokenJar)
     {
-        _waterLVText.text = $"물 수위 : {jar.CurrentWaterLv}/{jar.MaxWaterLv}";
-
+        _destroyJarText.text = $"깨진 항아리 : {brokenJar}";
     }
-
-    private void UpdateJar(GameObject gameObject)
+    public void UpdateStage(int stageNum, string stageName)
     {
-        _waterLVText.text = $"깬 항아리 : {GameManager.Instance.DestroyJarNumber} 개";
-
+        _stageInfoText.text = $"{stageNum} 스테이지 : {stageName}";
     }
-    private void GaolWaterLv()
+    public void CurrentWellLV(int persent)
     {
-
+        _wellWaterLVText.text = $"{persent} %";
     }
 }

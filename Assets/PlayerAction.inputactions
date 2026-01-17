@@ -17,18 +17,27 @@
                 },
                 {
                     "name": "Hold",
-                    "type": "PassThrough",
+                    "type": "Button",
                     "id": "f07d7850-569d-494d-be4f-6a44bdcf3dae",
-                    "expectedControlType": "Button",
+                    "expectedControlType": "",
                     "processors": "",
                     "interactions": "",
                     "initialStateCheck": false
                 },
                 {
                     "name": "Throw",
-                    "type": "PassThrough",
+                    "type": "Button",
                     "id": "751847be-54a2-458c-8193-1416613baf92",
-                    "expectedControlType": "Button",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "Water",
+                    "type": "Button",
+                    "id": "24eefe90-83df-4b2d-9079-2593ec6f5ca8",
+                    "expectedControlType": "",
                     "processors": "",
                     "interactions": "",
                     "initialStateCheck": false
@@ -177,6 +186,17 @@
                     "action": "Throw",
                     "isComposite": false,
                     "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "c4dada96-fa26-40f3-b256-cad24ca0cffb",
+                    "path": "<Mouse>/leftButton",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Water",
+                    "isComposite": false,
+                    "isPartOfComposite": false
                 }
             ]
         }
@@ -188,6 +208,11 @@
             "devices": [
                 {
                     "devicePath": "<Keyboard>",
+                    "isOptional": false,
+                    "isOR": false
+                },
+                {
+                    "devicePath": "<Mouse>",
                     "isOptional": false,
                     "isOR": false
                 }

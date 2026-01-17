@@ -6,7 +6,7 @@ using UnityEngine;
 public class GameManager : MonoBehaviourPunCallbacks
 {
     [Header("리스폰 지역")]
-    [SerializeField] public GameObject rewpawnPos;
+    [SerializeField] public GameObject reSpawnPos;
     [Header("플레이어 프리팹")]
     [SerializeField] public GameObject playerPrefab;
     [Header("항아리 프리팹")]
@@ -17,9 +17,10 @@ public class GameManager : MonoBehaviourPunCallbacks
     [SerializeField] public Presenter presenter;
 
     public List<GameObject> JarList = new List<GameObject>();
+    public List<GameObject> IngamePlayerList = new List<GameObject>();
+    private Collider jarSpawnCollider;
 
     public static GameManager Instance;
-    public int DestroyJarNumber {  get; private set; }
 
     private void Awake()
     {
@@ -39,31 +40,27 @@ public class GameManager : MonoBehaviourPunCallbacks
 
     private void Start()
     {
-        Jar.OnDestroyJar += CountJar;
+        jarSpawnCollider = jarSpawnPos.GetComponent<Collider>();
     }
 
-    public void CountJar(GameObject gameObject)
-    {
-        DestroyJarNumber++;
-        JarList.Remove(gameObject);
-    }
     private void Init()
     {
         JarList.Clear();
         JarSetting();
-        DestroyJarNumber = 0;
         //플레이어 소환
         GameObject player = PhotonNetwork.Instantiate(
             playerPrefab.name, 
-            rewpawnPos.transform.position, 
+            reSpawnPos.transform.position, 
             transform.rotation
             );
+        IngamePlayerList.Add(player);
 
         //우물 초기화
     }
 
-    private void JarSetting()
+    public void JarSetting()
     {
+        if (!PhotonNetwork.IsMasterClient) return;
 
         GameObject jar = PhotonNetwork.Instantiate(
             jarPrefab.name,
@@ -71,5 +68,10 @@ public class GameManager : MonoBehaviourPunCallbacks
             transform.rotation
             );
         JarList.Add(jar);
+    }
+
+    public void ReSpawnPlayer(GameObject player)
+    {
+        player.transform.position = reSpawnPos.transform.position;
     }
 }
