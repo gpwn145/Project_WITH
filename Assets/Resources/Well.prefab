@@ -125,10 +125,11 @@ GameObject:
   - component: {fileID: 4407714999810283087}
   - component: {fileID: 6971691048388068050}
   - component: {fileID: 4753056436269769210}
-  - component: {fileID: 179353656019407932}
+  - component: {fileID: 2463419340174859658}
+  - component: {fileID: 6595157500016522653}
   m_Layer: 0
   m_Name: Water
-  m_TagString: Untagged
+  m_TagString: Goal
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -204,8 +205,21 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!136 &179353656019407932
-CapsuleCollider:
+--- !u!114 &2463419340174859658
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8785797994954714461}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4699c5df6b2d2c9498ef38f758ebcb30, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Well
+  _goalWater: 10
+--- !u!65 &6595157500016522653
+BoxCollider:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -219,11 +233,9 @@ CapsuleCollider:
     serializedVersion: 2
     m_Bits: 0
   m_LayerOverridePriority: 0
-  m_IsTrigger: 0
+  m_IsTrigger: 1
   m_ProvidesContacts: 0
   m_Enabled: 1
-  serializedVersion: 2
-  m_Radius: 0.5000001
-  m_Height: 2
-  m_Direction: 1
-  m_Center: {x: 0.000000059604645, y: 0, z: -0.00000008940697}
+  serializedVersion: 3
+  m_Size: {x: 0.8, y: 1, z: 0.8}
+  m_Center: {x: 0.000000059604638, y: 0.54, z: -0.000000029802308}
