@@ -2,8 +2,6 @@
 using System;
 using UnityEngine;
 using UnityEngine.InputSystem;
-using UnityEngine.Windows;
-using static UnityEngine.GraphicsBuffer;
 
 public partial class PlayerScript : MonoBehaviourPunCallbacks
 {
@@ -16,29 +14,27 @@ public partial class PlayerScript : MonoBehaviourPunCallbacks
     const int LAYER_JarPlayer = 7;
     const int LAYER_JarPutDown = 8;
 
-    public static event Action<PlayerScript> OnGrab;
-    public static event Action<Jar> OnGrabTargetJar;
-    public static event Action<Jar> OnGrabOrPut;
-
     public GameObject Hand => _hand;
 
     private void OnTriggerEnter(Collider other)
     {
+        Debug.Log($"플레이어 트리거 : {other.gameObject.name}");
+
         if (other.gameObject.tag == "Button" && _hand == null)
         {
             _target = other.gameObject;
             Debug.Log("누를버튼 있음");
         }
 
-        else if (other.gameObject.tag == "JarGrapRange" && _hand == null)
+        else if (other.gameObject.tag == "JarGrabRange" && _hand == null)
         {
             _target = other.gameObject;
             Debug.Log("타겟 항아리 있음");
         }
 
-        if (other.gameObject.tag == "Respawn")
+        if (other.gameObject.tag == "Out")
         {
-            gameObject.transform.position = _rewpawnPos.transform.position;
+            _gameSceneManager.ReSpawnPlayer(gameObject, _hand);
         }
     }
 
@@ -59,7 +55,7 @@ public partial class PlayerScript : MonoBehaviourPunCallbacks
                 );
             }
         }
-        else if (other.gameObject.tag == "JarGrapRange")
+        else if (other.gameObject.tag == "JarGrabRange")
         {
             Debug.Log("타겟 항아리 없음");
             _target = null;
@@ -72,7 +68,7 @@ public partial class PlayerScript : MonoBehaviourPunCallbacks
 
         if (_target != null && _hand == null)
         {
-            if (ctx.performed && _target.tag == "JarGrapRange")
+            if (ctx.performed && _target.tag == "JarGrabRange")
             {
                 Debug.Log("항아리 잡음");
 
@@ -177,14 +173,14 @@ public partial class PlayerScript : MonoBehaviourPunCallbacks
         gameObject.layer = 0;
         
         jarRigid.AddForce(throwWay, ForceMode.Impulse);
-        OnGrabOrPut?.Invoke(_hand.GetComponent<Jar>());
     }
 
     private void GrabJar()
     {
         if(_hand.gameObject.layer == LAYER_JarSpawn)
         {
-            _presenter.JarTaken();
+            _presenter.JarTaken(); 
+            Debug.Log($"항아리 가져감");
         }
 
         Rigidbody jarRigid = _hand.transform.GetComponent<Rigidbody>();
@@ -200,7 +196,6 @@ public partial class PlayerScript : MonoBehaviourPunCallbacks
         _hand.transform.SetParent(gameObject.transform, false);
         _hand.transform.position = _jarPos.transform.position;
         _hand.transform.rotation = gameObject.transform.rotation;
-        OnGrabOrPut?.Invoke(_hand.GetComponent<Jar>());
     }
 
     private void PutJar()
@@ -221,6 +216,10 @@ public partial class PlayerScript : MonoBehaviourPunCallbacks
         _hand.layer = LAYER_JarPutDown;
         Vector3 putPos = gameObject.transform.position + transform.forward * _putPos;
         _hand.transform.position = putPos;
-        OnGrabOrPut?.Invoke(_hand.GetComponent<Jar>());
+    }
+
+    private void WaterButtonInteraction(bool isOpen)
+    {
+        _presenter._waterButton.WaterOpen(isOpen);
     }
 }

@@ -9,10 +9,10 @@ TagManager:
   - Water
   - JarSafeZone
   - Hurdle
-  - JarGrapRange
   - Floor
   - Out
   - Goal
+  - JarGrabRange
   layers:
   - Default
   - TransparentFX

@@ -1,77 +1,78 @@
-﻿using NUnit.Framework;
-using Photon.Pun;
-using System.Collections.Generic;
+﻿using Photon.Pun;
+using Photon.Pun.Demo.PunBasics;
 using UnityEngine;
 
 public class GameManager : MonoBehaviourPunCallbacks
 {
-    [Header("리스폰 지역")]
-    [SerializeField] public GameObject reSpawnPos;
-    [Header("플레이어 프리팹")]
-    [SerializeField] public GameObject playerPrefab;
-    [Header("항아리 프리팹")]
-    [SerializeField] public GameObject jarPrefab;
-    [Header("항아리 스폰지역")]
-    [SerializeField] public GameObject jarSpawnPos;
-    [Header("프레젠터")]
-    [SerializeField] public Presenter presenter;
-
-    public List<GameObject> JarList = new List<GameObject>();
-    public List<GameObject> IngamePlayerList = new List<GameObject>();
-    private Collider jarSpawnCollider;
-
     public static GameManager Instance;
+    
+    public int choiceStage;
+
+    //스테이지 클리어 정보
+    public int stageClearInfo;
+
 
     private void Awake()
     {
         #region 싱글톤
-        if (Instance == null)
+        if (Instance != null && Instance != this)
         {
-            Instance = this;
-            DontDestroyOnLoad(this);
+            Destroy(gameObject);
+            return;
+        }
+        Instance = this;
+        DontDestroyOnLoad(gameObject);
+        #endregion
+    }
+
+
+    public void SetStage()
+    {
+        var props = PhotonNetwork.CurrentRoom.CustomProperties;
+
+        Debug.Log($"열린 스테이지 개수 : {stageClearInfo}");
+        if (props.ContainsKey("StageClearInfo") == false)
+        {
+            stageClearInfo = 1;
+            props["StageClearInfo"] = stageClearInfo;
+            PhotonNetwork.CurrentRoom.SetCustomProperties(props);
+            Debug.Log($"열린 스테이지 개수 불러오기 : {stageClearInfo}");
+            Debug.Log($"열린 스테이지 저장정보 : {(int)props["StageClearInfo"]}");
         }
         else
         {
-            Destroy(this);
+            stageClearInfo = (int)props["StageClearInfo"];
+            Debug.Log($"열린 스테이지 개수 불러오기 : {stageClearInfo}");
         }
-        #endregion
-        Init();
     }
 
-    private void Start()
+    public void UpdateStageClearInfo(int clearStage)
     {
-        jarSpawnCollider = jarSpawnPos.GetComponent<Collider>();
+        if (PhotonNetwork.IsMasterClient == false)
+        {
+            return;
+        }
+        stageClearInfo = clearStage + 1;
+        var props = PhotonNetwork.CurrentRoom.CustomProperties;
+        props["StageClearInfo"] = stageClearInfo;
+        props["ChoiceStage"] = choiceStage + 1;
+        Debug.Log($"다음 스테이지 : {props["StageClearInfo"]}");
+        Debug.Log($"다음 스테이지 세팅 : {props["ChoiceStage"]}");
     }
 
-    private void Init()
-    {
-        JarList.Clear();
-        JarSetting();
-        //플레이어 소환
-        GameObject player = PhotonNetwork.Instantiate(
-            playerPrefab.name, 
-            reSpawnPos.transform.position, 
-            transform.rotation
-            );
-        IngamePlayerList.Add(player);
+    //스테이지 클리어 정보
 
-        //우물 초기화
-    }
-
-    public void JarSetting()
+    public void StageSave(int stage)
     {
         if (!PhotonNetwork.IsMasterClient) return;
+        var props = PhotonNetwork.CurrentRoom.CustomProperties;
 
-        GameObject jar = PhotonNetwork.Instantiate(
-            jarPrefab.name,
-            jarSpawnPos.transform.position,
-            transform.rotation
-            );
-        JarList.Add(jar);
-    }
+        choiceStage = stage;
+        Debug.Log($"선택 스테이지 : {choiceStage}");
 
-    public void ReSpawnPlayer(GameObject player)
-    {
-        player.transform.position = reSpawnPos.transform.position;
+        props["ChoiceStage"] = choiceStage;
+        PhotonNetwork.CurrentRoom.SetCustomProperties(props);
+
+        Debug.Log($"열린 스테이지 저장정보 : {(int)props["ChoiceStage"]}");
     }
 }

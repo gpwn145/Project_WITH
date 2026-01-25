@@ -1,6 +1,5 @@
 ﻿using Photon.Pun;
 using System;
-using Unity.VisualScripting;
 using UnityEngine;
 
 enum ActionType
@@ -88,6 +87,7 @@ public partial class PlayerScript : MonoBehaviourPunCallbacks
                         );
 
                         isFilling = false;
+                        Debug.Log($"[RPC_MasterAction] 물 켜져있음 -1전달");
                     }
 
                     //버튼 항아리 있을때 항아리 먼저 잡을 수 있음
@@ -95,6 +95,8 @@ public partial class PlayerScript : MonoBehaviourPunCallbacks
                     {
                         return;
                     }
+
+                    int grabPlayerNum = photonView.OwnerActorNr;
 
                     jarPV.TransferOwnership(PhotonNetwork.MasterClient);
 
@@ -166,37 +168,51 @@ public partial class PlayerScript : MonoBehaviourPunCallbacks
     [PunRPC]
     void RPC_ApplyAction(ActionType Action, int jarViewId, Vector3 throwWay)
     {
+        if (_gameSceneManager._isSceneChanging) return;
+
         Debug.Log($"[WaterFillStart] presenter = {_presenter}, waterButton = {_presenter?._waterButton}");
 
         switch (Action)
         {
             case ActionType.WaterFillStart:
                 {
-                    _presenter._waterButton.WaterOpen(true);
+                    WaterButtonInteraction(true);
+                    Debug.Log($"[RPC_ApplyAction] 물 채우기 시작");
                     return;
                 }
             //버튼
             case ActionType.WaterFillEnd:
                 {
-                    _presenter._waterButton.WaterOpen(false);
+                    WaterButtonInteraction(false);
                     OnFillStop?.Invoke();
+                    Debug.Log($"[RPC_ApplyAction] 물 채우기 멈춤");
                     return;
                 }
         }
 
+        if (jarViewId <= 0)
+            return;
 
         PhotonView jarPV = PhotonView.Find(jarViewId);
-        if (jarPV == null) return;
+        if (jarPV == null)
+            return;
+
         _hand = jarPV.gameObject;
         _target = null;
+
+        Jar jar = jarPV.GetComponent<Jar>();
+        if (jar == null)
+            return;
 
         switch (Action)
         {
             case ActionType.Grab:
                 {
                     GrabJar();
-                    OnGrab?.Invoke(this);
-                    OnGrabTargetJar?.Invoke(_hand.GetComponent<Jar>());
+                    _gameSceneManager.GSGrab(this);
+                    _gameSceneManager.GSGrabTargetJar(_hand.GetComponent<Jar>());
+                    Debug.Log($"[RPC_ApplyAction] 항아리 잡았음 ");
+                    _gameSceneManager.GSGrabOrPut(_hand.GetComponent<Jar>());
                 }
 
                 break;
@@ -207,7 +223,10 @@ public partial class PlayerScript : MonoBehaviourPunCallbacks
                     _hand.gameObject.GetComponent<Jar>().GodMode(false);
                     ThrowJar(throwWay);
 
+                    _gameSceneManager.GSGrabOrPut(_hand.GetComponent<Jar>());
+
                     _hand = null;
+                    Debug.Log($"[RPC_ApplyAction] 항아리 던졋음 ");
                 }
                 break;
             case ActionType.Put:
@@ -217,7 +236,9 @@ public partial class PlayerScript : MonoBehaviourPunCallbacks
                     _hand.gameObject.GetComponent<Jar>().GodMode(true);
                     PutJar();
 
+                    _gameSceneManager.GSGrabOrPut(_hand.GetComponent<Jar>());
                     _hand = null;
+                    Debug.Log($"[RPC_ApplyAction] 플레이어 항아리 내려놓았음 ");
                 }
                 break;
         }

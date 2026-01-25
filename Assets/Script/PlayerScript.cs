@@ -1,11 +1,14 @@
 ﻿using Photon.Pun;
+using Photon.Pun.Demo.PunBasics;
 using System;
-using UnityEngine;
 using System.Collections;
+using UnityEditor;
+using UnityEngine;
 using UnityEngine.InputSystem;
 
 public partial class PlayerScript : MonoBehaviourPunCallbacks
 {
+    //공통
     [Header("이동 힘")]
     [SerializeField, Range(5f, 20f)] private float _moveSpeed = 10f;
     [Header("회전속도")]
@@ -16,24 +19,36 @@ public partial class PlayerScript : MonoBehaviourPunCallbacks
     [SerializeField, Range(10f, 30f)] private float _throwForce = 10f;
     [Header("밀려나는 힘")]
     [SerializeField, Range(0f, 10f)] private float _backForce = 3f;
-    [Header("플레이어 색")]
-    [SerializeField] private string _colorCode = "#FF8686";
     [SerializeField] GameObject _jarPos;
 
+    //개인
+    [Header("플레이어 색")]
+    [SerializeField] private string _colorCode = "#FF8686";
     private GameObject _rewpawnPos;
-    private Vector3 moveDirection;
-    private Vector2 input;
+    public int playerNum;
+
+    //상호작용
     private bool isBack;
     private bool isWaiting = false;
+    private Rigidbody _rigidbody;
 
+    //참조
     private Presenter _presenter;
+    private GameSceneManager _gameSceneManager;
+
+    //카메라
+    private FollowCamera playerCamera;
+
+    //조작
+    private Vector3 moveDirection;
+    private Vector2 input;
     private PlayerInput _playerInput;
     private InputActionMap _playerMap;
     private InputAction _moveAction;
     private InputAction _holdAction;
     private InputAction _thorwAction;
     private InputAction _waterButtonAction;
-    private Rigidbody _rigidbody;
+    private InputAction _ESCAction;
 
     private void Awake()
     {
@@ -45,9 +60,11 @@ public partial class PlayerScript : MonoBehaviourPunCallbacks
         _holdAction = _playerMap.FindAction("Hold");
         _thorwAction = _playerMap.FindAction("Throw");
         _waterButtonAction = _playerMap.FindAction("Water");
+        _ESCAction = _playerMap.FindAction("ESC");
 
-        _rewpawnPos = GameManager.Instance.reSpawnPos;
-        _presenter = GameManager.Instance.presenter;
+        _presenter = GameObject.Find("InGameUI").GetComponent<Presenter>();
+        _gameSceneManager = _presenter._gameSceneManager;
+        _rewpawnPos = _presenter._gameSceneManager.repawnPos[0];
     }
 
     private void Start()
@@ -58,16 +75,39 @@ public partial class PlayerScript : MonoBehaviourPunCallbacks
         ColorUtility.TryParseHtmlString(_colorCode, out var color);
         renderer.material.color = color;
         gameObject.tag = "Player";
+
+        playerCamera = FindAnyObjectByType<FollowCamera>();
+
+        if (playerCamera != null)
+        {
+            Debug.Log("카메라 스크립트 찾음");
+            playerCamera.SetTarget(this.transform);
+        }
+        else
+        {
+            Debug.Log("카메라 스크립트 못찾음");
+        }
     }
 
     public override void OnEnable()
     {
+        if(photonView.IsMine == true)
+        {
+            _playerInput.ActivateInput();
+        }
+        else
+        {
+            _playerInput.DeactivateInput();
+        }
+
         _playerMap.Enable();
 
         _moveAction.performed += OnMove;
         _moveAction.canceled += OnMove;
 
         _holdAction.performed += OnHoldAction;
+
+        _ESCAction.performed += OnMenu;
 
         _thorwAction.performed += OnThorowAction;
 
@@ -81,6 +121,8 @@ public partial class PlayerScript : MonoBehaviourPunCallbacks
         _moveAction.canceled -= OnMove;
 
         _holdAction.performed -= OnHoldAction;
+
+        _ESCAction.performed -= OnMenu;
 
         _thorwAction.performed -= OnThorowAction;
 
@@ -111,16 +153,47 @@ public partial class PlayerScript : MonoBehaviourPunCallbacks
             return;
         }
 
-        moveDirection = new Vector3(input.x, 0f, input.y);
+        Vector3 cameraForward = playerCamera.transform.forward;
+        Vector3 cameraRight = playerCamera.transform.right;
+        
+        cameraForward.y = 0f;
+        cameraRight.y = 0f;
 
-        _rigidbody.MoveRotation(Quaternion.Slerp(
+        cameraForward.Normalize();
+        cameraRight.Normalize();
+
+        moveDirection =
+            cameraRight * input.x +
+            cameraForward * input.y
+            ;
+
+        if(moveDirection.sqrMagnitude > 0.0001f)
+        {
+            _rigidbody.MoveRotation(Quaternion.Slerp(
             _rigidbody.rotation,
             Quaternion.LookRotation(moveDirection),
             _rotateSpeed * Time.fixedDeltaTime
             ));
-
+        }
         //_rigidbody.MovePosition(_rigidbody.position + _rigidbody.transform.forward * _moveSpeed * Time.deltaTime);
-        _rigidbody.AddForce(_rigidbody.transform.forward * _moveSpeed * Time.deltaTime, ForceMode.Impulse);
+        _rigidbody.AddForce(moveDirection * _moveSpeed * Time.deltaTime, ForceMode.Impulse);
+    }
+
+    private void OnMenu(InputAction.CallbackContext ctx)
+    {
+        if (!photonView.IsMine) return;
+
+        if (ctx.performed)
+        {
+            if(_presenter.menuPanel.activeSelf == true)
+            { 
+                _presenter.menuPanel.SetActive(false);
+            }
+            if(_presenter.menuPanel.activeSelf == false)
+            { 
+                _presenter.menuPanel.SetActive(true);
+            }
+        }
     }
 
     private void OnMove(InputAction.CallbackContext ctx)
@@ -137,13 +210,16 @@ public partial class PlayerScript : MonoBehaviourPunCallbacks
         }
     }
 
+
     private void OnCollisionEnter(Collision collision)
     {
         if (!photonView.IsMine) return;
 
+        Debug.Log($"플레이어 콜라이더 : {collision.gameObject.name}");
+
         if (collision.gameObject.tag == "Player" || collision.gameObject.tag == "Hurdle" || collision.gameObject.tag == "Jar")
         {
-            if(collision.gameObject.layer == LAYER_JarPlayer)
+            if (collision.gameObject.layer == LAYER_JarPlayer)
             {
                 return;
             }
@@ -163,13 +239,7 @@ public partial class PlayerScript : MonoBehaviourPunCallbacks
                 _hand.gameObject.GetComponent<Jar>().Damaged();
             }
         }
-
-        if (collision.gameObject.tag == "Out")
-        {
-            GameManager.Instance.ReSpawnPlayer(gameObject);
-        }
-
-        }
+    }
 
     private void BackMove(Collision collision)
     {
@@ -183,5 +253,11 @@ public partial class PlayerScript : MonoBehaviourPunCallbacks
     {
         yield return new WaitForSeconds(1f);
         isWaiting = false;
+    }
+
+    public void Restert()
+    {
+        if (!photonView.IsMine) return;
+        _gameSceneManager.ReSpawnPlayer(gameObject, _hand);
     }
 }

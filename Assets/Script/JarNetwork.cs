@@ -4,8 +4,6 @@ using UnityEngine;
 
 public partial class Jar : MonoBehaviourPunCallbacks, IPunObservable
 {
-    private int _destroyJarNumber;
-
     [PunRPC]
     void RPC_JarState(JarState jarState)
     {
@@ -15,43 +13,57 @@ public partial class Jar : MonoBehaviourPunCallbacks, IPunObservable
     void Master_GoalWater(GameObject jar)
     {
         if (PhotonNetwork.IsMasterClient == false)
-        { 
+        {
             return;
         }
-        GameManager.Instance.JarList.Remove(jar);
+
+        if(_isDestroyed == true)
+        {
+            return;
+        }
+        _presenter.wellModel.WellWaterPlus(_currentWaterLv);
         PhotonNetwork.Destroy(jar);
+        _isDestroyed = true;
         Debug.Log("우물 - 항아리 제거");
     }
 
-    void Master_DestroyJar(GameObject jar)
+    public void Master_DestroyJar(GameObject jar)
     {
+        if (_isDestroyed == true)
+        {
+            return;
+        }
+
         if (PhotonNetwork.IsMasterClient == false) 
         {
             return;
         }
-        _presenter.CurrentDstroyJar(++_destroyJarNumber);
-        GameManager.Instance.JarList.Remove(jar);
+        _gameSceneManager.JarCout(jar);
         PhotonNetwork.Destroy(jar);
-        Debug.Log("내구도바닥 - 항아리 제거");
+        _isDestroyed = true;
     }
+
 
     public void OnPhotonSerializeView(PhotonStream stream, PhotonMessageInfo info)
     {
+        if (_rigid == null) return;
+
         if (stream.IsWriting)
         {
             stream.SendNext(_currentWaterLv);
-            stream.SendNext(_destroyJarNumber);
+            stream.SendNext(_rigid.position);
         }
         else // 클라이언트
         {
             float currentWaterLv = _currentWaterLv;
             _currentWaterLv = (float)stream.ReceiveNext();
-            _destroyJarNumber = (int)stream.ReceiveNext();
+            _rigid.position = (Vector3)stream.ReceiveNext();
 
             // 값이 실제로 바뀌었을 때만 UI 갱신
             if (!Mathf.Approximately(currentWaterLv, _currentWaterLv))
             {
-                OnWaterLV?.Invoke(this);
+                
+                    OnWaterLV?.Invoke(this);
             }
         }
     }

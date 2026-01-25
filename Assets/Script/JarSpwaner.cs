@@ -9,6 +9,7 @@ public class JarSpwaner : MonoBehaviour
         if (other.gameObject.tag == "Jar")
         {
             hasJar = true;
+            Debug.Log("항아리 있음");
         }
     }
 }

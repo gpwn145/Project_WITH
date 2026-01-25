@@ -18,10 +18,11 @@ public partial class Jar : MonoBehaviourPunCallbacks, IPunObservable
     [SerializeField] private float _maxWaterLv = 5f;
     [Header("상태")]
     [SerializeField] public JarState _jarState = JarState.None;
-    [Header("프레젠터")]
-    [SerializeField] private Presenter _presenter;
+    private Presenter _presenter;
+    private GameSceneManager _gameSceneManager;
     private int _currentHP;
-    private float _currentWaterLv;
+    [Header("현재 물")]
+    [SerializeField, Range(00f, 5f)] private float _currentWaterLv;
 
     //private bool _isLeakTime = false;
     //private bool _isWater = false;
@@ -29,6 +30,7 @@ public partial class Jar : MonoBehaviourPunCallbacks, IPunObservable
     //private bool _isCoroutineStart = false;
     private Rigidbody _rigid;
     private Coroutine prograssCor;
+    private bool _isDestroyed = false;
 
     const int LAYER_JarSpawn = 6;
     const int LAYER_JarPlayer = 7;
@@ -57,6 +59,7 @@ public partial class Jar : MonoBehaviourPunCallbacks, IPunObservable
     private void Start()
     {
         _presenter = GameObject.Find("InGameUI").GetComponent<Presenter>();
+        _gameSceneManager = _presenter._gameSceneManager;
         PlayerScript.OnFillStop += FillStop;
     }
 
@@ -78,11 +81,17 @@ public partial class Jar : MonoBehaviourPunCallbacks, IPunObservable
 
     public void FillStop()
     {
+        if (_isDestroyed) return;
+        if (_gameSceneManager._isSceneChanging) return;
+
         SendStateRPC(JarState.None);
     }
 
     public void SendStateRPC(JarState state)
     {
+        if (_gameSceneManager._isSceneChanging) return;
+        if (_isDestroyed) return;
+        if (photonView == null) return;
         if (PhotonNetwork.IsMasterClient == false)
         {
             return;
@@ -99,6 +108,8 @@ public partial class Jar : MonoBehaviourPunCallbacks, IPunObservable
 
     private void OnCollisionEnter(Collision collision)
     {
+        Debug.Log($"항아리 콜라이더 : {collision.gameObject.name}");
+
         if (collision.gameObject.tag == "Floor" || collision.gameObject.tag == "Hurdle" || collision.gameObject.tag == "Player")
         {
             if (collision.gameObject.layer == LAYER_JarPlayer)
@@ -113,12 +124,6 @@ public partial class Jar : MonoBehaviourPunCallbacks, IPunObservable
             {
                 Damaged();
             }
-        }
-
-        if (collision.gameObject.tag == "Out")
-        {
-            Master_DestroyJar(gameObject);
-            Debug.Log("항아리 파괴");
         }
     }
 
@@ -151,6 +156,21 @@ public partial class Jar : MonoBehaviourPunCallbacks, IPunObservable
 
     private void OnTriggerEnter(Collider other)
     {
+        Debug.Log($"항아리 트리거 : {other.gameObject.name}");
+
+        if (other.gameObject.tag == "Out")
+        {
+            Debug.Log("항아리 파괴");
+            Master_DestroyJar(gameObject);
+            return;
+        }
+        else if (other.gameObject.tag == "Goal")
+        {
+            Master_GoalWater(gameObject);
+            Debug.Log("우물에 던짐");
+            return;
+        }
+
         if (other.gameObject.tag == "Water")
         {
             if (PhotonNetwork.IsMasterClient == false)
@@ -162,12 +182,6 @@ public partial class Jar : MonoBehaviourPunCallbacks, IPunObservable
             }
             SendStateRPC(JarState.WaterFilling);
             Debug.Log("물받기 시작");
-        }
-
-        if (other.gameObject.tag == "Goal")
-        {
-            Master_GoalWater(gameObject);
-            Debug.Log("우물에 던짐");
         }
     }
 
@@ -223,7 +237,7 @@ public partial class Jar : MonoBehaviourPunCallbacks, IPunObservable
         }
         _currentWaterLv += 1f * Time.deltaTime;
         _currentWaterLv = Mathf.Clamp(_currentWaterLv, 0f, _maxWaterLv);
-        Debug.Log($"항아리 물 {_currentWaterLv}/{_maxWaterLv}");
+        OnWaterLV?.Invoke(this);
     }
     public void LeakWater()
     {

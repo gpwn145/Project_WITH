@@ -24,37 +24,6 @@ public class LobbyManager : MonoBehaviourPunCallbacks
 
     }
 
-    //private string RoomID()
-    //{
-    //    int roomNum = 0;
-    //    string roomID;
-
-    //    while(true)
-    //    {
-    //        roomID = $"Room-{roomNum}";
-    //        bool exit = true;
-
-    //        for (int i = 0; i < _roomList.Count; i++)
-    //        {
-    //            //중복 이면 루프 계속
-    //            if (roomID == _roomList[i].Name)
-    //            {
-    //                exit = false ;
-    //                break ;
-    //            }
-    //        }
-
-    //        if (exit == true)
-    //        {
-    //            break;
-    //        }
-
-    //        roomNum++;
-    //    }
-
-    //    return roomID;
-    //}
-
     //방 생성시 호출
     public override void OnCreatedRoom()
     {

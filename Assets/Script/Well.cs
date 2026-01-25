@@ -4,24 +4,33 @@ using UnityEngine;
 public class Well : MonoBehaviour
 {
     [Header("우물 목표 L")]
-    [SerializeField, Range(10f, 100f)] private float _goalWater = 10f;
-    private float _currentWater = 0f;
+    [SerializeField, Range(5f, 100f)] private float _goalWater = 5f;
+    [Header("우물 목표 L")]
+    [SerializeField, Range(0f, 10f)] private float _currentWater = 0f;
+    private float _plusWater;
+    private bool isClear = false;
+    private GameSceneManager _gameSceneManager;
 
+    public float CurrentWater { get { return _currentWater; } set { _currentWater = value; } }
     public event Action<float, float> OnAddWater;
-    
-    private void OnTriggerEnter(Collider other)
+
+    private void Start()
     {
-        if (other.gameObject.tag == "Jar")
+        _gameSceneManager = FindAnyObjectByType<GameSceneManager>();
+    }
+    public void WellWaterPlus(float jarWater)
+    {
+        _currentWater += jarWater;
+        OnAddWater.Invoke(_currentWater, _goalWater);
+        Debug.Log($"우물 물 량 추가 / 현재: {_currentWater}");
+        if (_currentWater >= _goalWater)
         {
-            Jar targetScript = other.gameObject.GetComponent<Jar>();
-            if (targetScript == null)
-            {
-                Debug.Log($"Jar 스크립트 못찾음");
-                return;
-            }
-            float target = targetScript.CurrentWaterLv;
-            _currentWater += target;
-            OnAddWater.Invoke(_currentWater, _goalWater);
+            SatisfyGoal();
         }
+    }
+
+    public void SatisfyGoal()
+    {
+        _gameSceneManager.StageClear();
     }
 }

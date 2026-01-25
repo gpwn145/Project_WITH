@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using Photon.Pun;
+using UnityEngine;
 using UnityEngine.UI;
 
 public class InGameView : MonoBehaviour
@@ -14,7 +15,16 @@ public class InGameView : MonoBehaviour
     [Header("프레젠터 스크립트")]
     [SerializeField] private Presenter _presenter;
 
+    [Header("클리어 판넬 정보")]
+    [SerializeField] private Text _clearTime;
+    [SerializeField] private Image[] _scoreStar = new Image[3];
+
     private void Awake()
+    {
+        Init();
+    }
+
+    public void Init()
     {
         _jarWaterLVText.text = "0.0 / 0.0";
         _destroyJarText.text = "깨진 항아리 : 0";
@@ -24,6 +34,7 @@ public class InGameView : MonoBehaviour
 
     public void UpdateJarWater(float current, float max)
     {
+        Debug.Log($"<color=yellow> 플레이어{PhotonNetwork.LocalPlayer.ActorNumber} : UI 갱신 </color> ");
         _jarWaterLVText.text = $"{current} / {max}";
     }
 
@@ -31,12 +42,28 @@ public class InGameView : MonoBehaviour
     {
         _destroyJarText.text = $"깨진 항아리 : {brokenJar}";
     }
+
     public void UpdateStage(int stageNum, string stageName)
     {
         _stageInfoText.text = $"{stageNum} 스테이지 : {stageName}";
     }
+
     public void CurrentWellLV(int persent)
     {
         _wellWaterLVText.text = $"{persent} %";
+    }
+
+    public void ClearStageInfo(int score)
+    {
+        _clearTime.text = "00:00";
+
+        for(int i = 0; i < score; i++)
+        {
+            _scoreStar[i].color = Color.white;
+        }
+        for(int i = score; i < 3; i++)
+        {
+            _scoreStar[i].color = Color.black;
+        }
     }
 }
