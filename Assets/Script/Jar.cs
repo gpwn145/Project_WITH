@@ -31,6 +31,7 @@ public partial class Jar : MonoBehaviourPunCallbacks, IPunObservable
     private Rigidbody _rigid;
     private Coroutine prograssCor;
     private bool _isDestroyed = false;
+    public JarSpwaner jarSpwaner;
 
     const int LAYER_JarSpawn = 6;
     const int LAYER_JarPlayer = 7;

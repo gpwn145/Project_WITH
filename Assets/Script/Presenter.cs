@@ -159,10 +159,28 @@ public class Presenter : MonoBehaviour
         }
     }
 
-    public void JarTaken()
+    public void JarTaken(JarSpwaner jarSpwaner)
     {
-        _gameSceneManager.GJarTaken();
-        Debug.Log($"항아리 가져간거 매니저에 전달");
+        if (jarSpwaner == null)
+        {
+            Debug.LogError("항아리 스포너 없음");
+            return;
+        }
+
+        if (view == null)
+        {
+            Debug.LogError("인게임뷰 없음");
+            return;
+        }
+
+        if (_gameSceneManager == null)
+        {
+            Debug.LogError("게임씬매니저 없음");
+            return;
+        }
+
+        jarSpwaner.JarSetting();
+        Debug.Log($"항아리 생성 요청");
     }
 
     //스테이지 클리어 > 각자

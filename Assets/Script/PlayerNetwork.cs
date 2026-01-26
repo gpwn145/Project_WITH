@@ -208,7 +208,7 @@ public partial class PlayerScript : MonoBehaviourPunCallbacks
         {
             case ActionType.Grab:
                 {
-                    GrabJar();
+                    GrabJar(_hand.GetComponent<Jar>().jarSpwaner);
                     _gameSceneManager.GSGrab(this);
                     _gameSceneManager.GSGrabTargetJar(_hand.GetComponent<Jar>());
                     Debug.Log($"[RPC_ApplyAction] 항아리 잡았음 ");

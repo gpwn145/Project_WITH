@@ -1,5 +1,4 @@
 ﻿using Photon.Pun;
-using Photon.Pun.Demo.PunBasics;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
@@ -7,16 +6,17 @@ using UnityEngine.SceneManagement;
 
 public partial class GameSceneManager : MonoBehaviourPunCallbacks
 {
+    [Header("항아리 스폰지역")]
+    [SerializeField] public List<JarSpwaner> jarSpawnScript = new List<JarSpwaner>();
+    //항아리 콜라이더
+    private List<Collider> jarSpawnCollider = new List<Collider>();
+
     [Header("리스폰 지역")]
     [SerializeField] public GameObject[] repawnPos = new GameObject[4];
 
     [Header("스테이지 프리팹")]
     [SerializeField] private List<GameObject> _stagePrefabs = new List<GameObject>();
 
-    [Header("항아리 스폰지역")]
-    [SerializeField] private List<GameObject> jarSpawnPos = new List<GameObject>();
-    //항아리 콜라이더
-    private List<Collider> jarSpawnCollider = new List<Collider>();
 
     [Header("프레젠터")]
     [SerializeField] public Presenter presenter;
@@ -62,7 +62,10 @@ public partial class GameSceneManager : MonoBehaviourPunCallbacks
         GetStage();
         GetSpawnPoint();
         GetJarSpawnPoint();
-        JarSetting();
+        for(int i = 0; i < jarSpawnScript.Count; i++)
+        {
+            jarSpawnScript[i].JarSetting();
+        }
         PlayerSpawn();
     }
 
@@ -90,12 +93,35 @@ public partial class GameSceneManager : MonoBehaviourPunCallbacks
             }
         }
     }
+    
 
-    private void GetJarSpawnPoint()
+    private void PlayerSpawn()
+    {
+        _actorNum = PhotonNetwork.LocalPlayer.ActorNumber - 1;
+        GameObject player = PhotonNetwork.Instantiate(
+        "Player",
+        repawnPos[_actorNum].transform.position,
+        transform.rotation
+        );
+        IngamePlayerList.Add(player);
+        player.GetComponent<PlayerScript>().playerNum = _actorNum;
+    }
+
+
+    public void ReSpawnPlayer(GameObject player, GameObject jar)
+    {
+        player.transform.position = repawnPos[_actorNum].transform.position;
+        if (jar != null)
+        {
+            jar.GetComponent<Jar>().Master_DestroyJar(jar);
+        }
+    }
+
+    public void GetJarSpawnPoint()
     {
         if (PhotonNetwork.IsMasterClient == true)
         {
-            jarSpawnPos.Clear();
+            jarSpawnScript.Clear();
             jarSpawnCollider.Clear();
 
             for (int i = 0; i < stageMap.JarSpawnPosNumber; i++)
@@ -111,67 +137,13 @@ public partial class GameSceneManager : MonoBehaviourPunCallbacks
                     Debug.Log("항아리 스폰 포인트 못찾음");
                     return;
                 }
-                jarSpawnPos.Add(parant.transform.Find($"JarSpawnPoint{i + 1}").gameObject);
 
+                GameObject jarObject = parant.transform.Find($"JarSpawnPoint{i + 1}").gameObject;
 
-                jarSpawnCollider.Add(jarSpawnPos[i].GetComponent<Collider>());
+                jarSpawnScript.Add(jarObject.GetComponent<JarSpwaner>());
+                jarSpawnCollider.Add(jarSpawnScript[i].GetComponent<Collider>());
+
                 Debug.Log("항아리 소환 포인트 읽어옴");
-            }
-        }
-    }
-
-    private void PlayerSpawn()
-    {
-        _actorNum = PhotonNetwork.LocalPlayer.ActorNumber - 1;
-        GameObject player = PhotonNetwork.Instantiate(
-        "Player",
-        repawnPos[_actorNum].transform.position,
-        transform.rotation
-        );
-        IngamePlayerList.Add(player);
-        player.GetComponent<PlayerScript>().playerNum = _actorNum;
-    }
-
-    public void JarSetting()
-    {
-        if (!PhotonNetwork.IsMasterClient) return;
-
-        for (int i = 0; i < jarSpawnPos.Count; i++)
-        {
-            GameObject jar = PhotonNetwork.Instantiate(
-            "Jar",
-            jarSpawnPos[i].transform.position,
-            transform.rotation
-            );
-            Debug.Log("항아리 생성");
-        }
-    }
-
-    public void ReSpawnPlayer(GameObject player, GameObject jar)
-    {
-        player.transform.position = repawnPos[_actorNum].transform.position;
-        if (jar != null)
-        {
-            jar.GetComponent<Jar>().Master_DestroyJar(jar);
-        }
-    }
-
-    public void GJarTaken()
-    {
-        if (PhotonNetwork.IsMasterClient == false) return;
-
-        if (jarSpawnPos[0] == null)
-        {
-            Debug.LogError("항아리 스폰 오브젝트 없음");
-            return;
-        }
-
-        for (int i = 0; i < jarSpawnPos.Count; i++)
-        {
-            if (jarSpawnPos[i].GetComponent<JarSpwaner>().hasJar == true)
-            {
-                jarSpawnPos[i].GetComponent<JarSpwaner>().hasJar = false;
-                JarSetting();
             }
         }
     }
@@ -204,7 +176,7 @@ public partial class GameSceneManager : MonoBehaviourPunCallbacks
         //깨진 항아리 초기화
         destroyJarNumber = 0;
         //플레이어 위치 초기화
-        for (int i = 0; i < jarSpawnPos.Count; i++)
+        for (int i = 0; i < IngamePlayerList.Count; i++)
         {
             IngamePlayerList[i].GetComponent<PlayerScript>().Restert();
         }

@@ -175,11 +175,11 @@ public partial class PlayerScript : MonoBehaviourPunCallbacks
         jarRigid.AddForce(throwWay, ForceMode.Impulse);
     }
 
-    private void GrabJar()
+    private void GrabJar(JarSpwaner jarSpwaner)
     {
         if(_hand.gameObject.layer == LAYER_JarSpawn)
         {
-            _presenter.JarTaken(); 
+            _presenter.JarTaken(jarSpwaner); 
             Debug.Log($"항아리 가져감");
         }
 
