@@ -58,6 +58,8 @@ public class GameManager : MonoBehaviourPunCallbacks
         props["ChoiceStage"] = choiceStage + 1;
         Debug.Log($"다음 스테이지 : {props["StageClearInfo"]}");
         Debug.Log($"다음 스테이지 세팅 : {props["ChoiceStage"]}");
+
+        PhotonNetwork.CurrentRoom.SetCustomProperties(props);
     }
 
     //스테이지 클리어 정보
