@@ -775,14 +775,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 0.392}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 10907, guid: 0000000000000000f000000000000000, type: 0}
+  m_Sprite: {fileID: 21300000, guid: 0da0947f0deaabe4799a8014f5a2ceea, type: 3}
   m_Type: 1
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -994,7 +994,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 10905, guid: 0000000000000000f000000000000000, type: 0}
+  m_Sprite: {fileID: 21300000, guid: ba41be4a91eceb14ba466ae5f7af6fd3, type: 3}
   m_Type: 1
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -1020,6 +1020,14 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 1380843988}
     m_Modifications:
+    - target: {fileID: 709252558872011894, guid: 7c08ee6c934329a4ba81c99fed4746f4, type: 3}
+      propertyPath: m_Transition
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 709252558872011894, guid: 7c08ee6c934329a4ba81c99fed4746f4, type: 3}
+      propertyPath: m_SpriteState.m_HighlightedSprite
+      value: 
+      objectReference: {fileID: 21300000, guid: b6493b3c5436044429554fd009a15824, type: 3}
     - target: {fileID: 709252558872011894, guid: 7c08ee6c934329a4ba81c99fed4746f4, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.size
       value: 1
@@ -1136,6 +1144,14 @@ PrefabInstance:
       propertyPath: m_Name
       value: StageButton (2)
       objectReference: {fileID: 0}
+    - target: {fileID: 5295155888109767768, guid: 7c08ee6c934329a4ba81c99fed4746f4, type: 3}
+      propertyPath: m_Type
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 5295155888109767768, guid: 7c08ee6c934329a4ba81c99fed4746f4, type: 3}
+      propertyPath: m_Sprite
+      value: 
+      objectReference: {fileID: 21300000, guid: 7704c3fd4cb3f454f874bf789f24c6be, type: 3}
     - target: {fileID: 6549177087177291355, guid: 7c08ee6c934329a4ba81c99fed4746f4, type: 3}
       propertyPath: m_Text
       value: 'Stage
@@ -1245,7 +1261,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 10907, guid: 0000000000000000f000000000000000, type: 0}
+  m_Sprite: {fileID: 21300000, guid: 80b37bde0c666f24aa95f4db28360fc2, type: 3}
   m_Type: 1
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -1433,6 +1449,8 @@ GameObject:
   - component: {fileID: 1827742273}
   - component: {fileID: 1827742272}
   - component: {fileID: 1827742271}
+  - component: {fileID: 1827742276}
+  - component: {fileID: 1827742275}
   m_Layer: 5
   m_Name: Canvas
   m_TagString: Untagged
@@ -1528,6 +1546,44 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0, y: 0}
+--- !u!114 &1827742275
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1827742270}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
+  m_Material: {fileID: 0}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_RaycastTarget: 1
+  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
+  m_Maskable: 1
+  m_OnCullStateChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  m_Sprite: {fileID: 21300000, guid: eff43949b2ed774489e53f677dfb7153, type: 3}
+  m_Type: 1
+  m_PreserveAspect: 0
+  m_FillCenter: 1
+  m_FillMethod: 4
+  m_FillAmount: 1
+  m_FillClockwise: 1
+  m_FillOrigin: 0
+  m_UseSpriteMesh: 0
+  m_PixelsPerUnitMultiplier: 1
+--- !u!222 &1827742276
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1827742270}
+  m_CullTransparentMesh: 1
 --- !u!1001 &1858057786
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -1536,6 +1592,14 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 1380843988}
     m_Modifications:
+    - target: {fileID: 709252558872011894, guid: 7c08ee6c934329a4ba81c99fed4746f4, type: 3}
+      propertyPath: m_Transition
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 709252558872011894, guid: 7c08ee6c934329a4ba81c99fed4746f4, type: 3}
+      propertyPath: m_SpriteState.m_HighlightedSprite
+      value: 
+      objectReference: {fileID: 21300000, guid: b6493b3c5436044429554fd009a15824, type: 3}
     - target: {fileID: 709252558872011894, guid: 7c08ee6c934329a4ba81c99fed4746f4, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.size
       value: 1
@@ -1652,6 +1716,14 @@ PrefabInstance:
       propertyPath: m_Name
       value: StageButton (1)
       objectReference: {fileID: 0}
+    - target: {fileID: 5295155888109767768, guid: 7c08ee6c934329a4ba81c99fed4746f4, type: 3}
+      propertyPath: m_Type
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 5295155888109767768, guid: 7c08ee6c934329a4ba81c99fed4746f4, type: 3}
+      propertyPath: m_Sprite
+      value: 
+      objectReference: {fileID: 21300000, guid: 7704c3fd4cb3f454f874bf789f24c6be, type: 3}
     - target: {fileID: 6549177087177291355, guid: 7c08ee6c934329a4ba81c99fed4746f4, type: 3}
       propertyPath: m_Text
       value: 'Stage
@@ -1834,6 +1906,14 @@ PrefabInstance:
     m_TransformParent: {fileID: 1380843988}
     m_Modifications:
     - target: {fileID: 709252558872011894, guid: 7c08ee6c934329a4ba81c99fed4746f4, type: 3}
+      propertyPath: m_Transition
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 709252558872011894, guid: 7c08ee6c934329a4ba81c99fed4746f4, type: 3}
+      propertyPath: m_SpriteState.m_HighlightedSprite
+      value: 
+      objectReference: {fileID: 21300000, guid: b6493b3c5436044429554fd009a15824, type: 3}
+    - target: {fileID: 709252558872011894, guid: 7c08ee6c934329a4ba81c99fed4746f4, type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.size
       value: 1
       objectReference: {fileID: 0}
@@ -1945,6 +2025,14 @@ PrefabInstance:
       propertyPath: m_Name
       value: StageButton
       objectReference: {fileID: 0}
+    - target: {fileID: 5295155888109767768, guid: 7c08ee6c934329a4ba81c99fed4746f4, type: 3}
+      propertyPath: m_Type
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 5295155888109767768, guid: 7c08ee6c934329a4ba81c99fed4746f4, type: 3}
+      propertyPath: m_Sprite
+      value: 
+      objectReference: {fileID: 21300000, guid: 7704c3fd4cb3f454f874bf789f24c6be, type: 3}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []

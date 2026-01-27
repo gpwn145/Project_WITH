@@ -45,6 +45,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b1205f257c07e0b449e6787b22296f61, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::JarSpawner
+  _gameSceneManager: {fileID: 0}
   hasJar: 0
 --- !u!65 &6777402719736845652
 BoxCollider:
@@ -1152,12 +1153,16 @@ PrefabInstance:
     m_TransformParent: {fileID: 1547379528350919835}
     m_Modifications:
     - target: {fileID: 6282680602707100031, guid: e45842952c77c1448b7c3209ab38dc72, type: 3}
+      propertyPath: m_LocalScale.x
+      value: 1.8542637
+      objectReference: {fileID: 0}
+    - target: {fileID: 6282680602707100031, guid: e45842952c77c1448b7c3209ab38dc72, type: 3}
       propertyPath: m_LocalScale.z
-      value: 6.258994
+      value: 2.990819
       objectReference: {fileID: 0}
     - target: {fileID: 6282680602707100031, guid: e45842952c77c1448b7c3209ab38dc72, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -4.5
+      value: -5.0287
       objectReference: {fileID: 0}
     - target: {fileID: 6282680602707100031, guid: e45842952c77c1448b7c3209ab38dc72, type: 3}
       propertyPath: m_LocalPosition.y
@@ -1165,7 +1170,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6282680602707100031, guid: e45842952c77c1448b7c3209ab38dc72, type: 3}
       propertyPath: m_LocalPosition.z
-      value: -7.5447
+      value: -10.607
       objectReference: {fileID: 0}
     - target: {fileID: 6282680602707100031, guid: e45842952c77c1448b7c3209ab38dc72, type: 3}
       propertyPath: m_LocalRotation.w
