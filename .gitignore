@@ -13,12 +13,14 @@
 *.log
 
 [Aa]ssets/Photon/PhotonUnityNetworking/Resources/PhotonServerSettings.asset
+[Aa]ssets/Photon/PhotonUnityNetworking/Demos
 [Aa]ssets/StreamingAssets/google-services.json
 [Aa]ssets/StreamingAssets/google-services-desktop.json
-[Aa]ssets/Firebase/Plugins/x86_64/
-[Aa]ssets/Firebase/Plugins/iOS/
+[Aa]ssets/Firebase/Plugins/x86_64
+[Aa]ssets/Firebase/Plugins/iOS
 [Aa]ssets/Firebase/Plugins/Android/
 [Aa]ssets/ignoreAsset
+[Aa]ssets/Stylized city
 
 # MemoryCaptures can get excessive in size.
 # They also could contain extremely sensitive data
