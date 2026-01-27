@@ -177,7 +177,7 @@ public partial class PlayerScript : MonoBehaviourPunCallbacks
             case ActionType.WaterFillStart:
                 {
                     WaterButtonInteraction(true);
-                    Debug.Log($"[RPC_ApplyAction] 물 채우기 시작");
+                    Debug.Log($"[RPC_ApplyAction] 물 오브젝트 활성화");
                     return;
                 }
             //버튼
@@ -185,7 +185,7 @@ public partial class PlayerScript : MonoBehaviourPunCallbacks
                 {
                     WaterButtonInteraction(false);
                     OnFillStop?.Invoke();
-                    Debug.Log($"[RPC_ApplyAction] 물 채우기 멈춤");
+                    Debug.Log($"[RPC_ApplyAction] 물 오브젝트 비활성화");
                     return;
                 }
         }

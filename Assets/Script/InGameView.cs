@@ -1,4 +1,5 @@
 ﻿using Photon.Pun;
+using System;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -19,6 +20,7 @@ public class InGameView : MonoBehaviour
     [SerializeField] private Text _clearTime;
     [SerializeField] private Image[] _scoreStar = new Image[3];
 
+
     private void Awake()
     {
         Init();
@@ -35,7 +37,7 @@ public class InGameView : MonoBehaviour
     public void UpdateJarWater(float current, float max)
     {
         Debug.Log($"<color=yellow> 플레이어{PhotonNetwork.LocalPlayer.ActorNumber} : UI 갱신 </color> ");
-        _jarWaterLVText.text = $"{current} / {max}";
+        _jarWaterLVText.text = $"{current:0.0} / {max:0.0}";
     }
 
     public void UpdateJar(int brokenJar)

@@ -71,6 +71,7 @@ public partial class Jar : MonoBehaviourPunCallbacks, IPunObservable
             if (_jarState == JarState.LeakTime)
             {
                 LeakWater();
+                OnWaterLV?.Invoke(this);
             }
 
             if (_jarState == JarState.WaterFilling)
@@ -85,7 +86,15 @@ public partial class Jar : MonoBehaviourPunCallbacks, IPunObservable
         if (_isDestroyed) return;
         if (_gameSceneManager._isSceneChanging) return;
 
+        if (prograssCor != null)
+        {
+            Debug.Log("코루틴 실행중");
+            return;
+        }
+
         SendStateRPC(JarState.None);
+        prograssCor = StartCoroutine(LeakWaterTimer());
+        Debug.Log("물샘 타이머 시작");
     }
 
     public void SendStateRPC(JarState state)
@@ -137,13 +146,20 @@ public partial class Jar : MonoBehaviourPunCallbacks, IPunObservable
 
         _currentHP -= 1;
 
+        if(_currentWaterLv > 0)
+        {
+            _currentWaterLv -= 1;
+        }
+
         if (_currentHP < 1)
         {
             Master_DestroyJar(gameObject);
             return;
         }
 
+        OnWaterLV?.Invoke(this);
         Debug.Log($"항아리 현재 내구도 {_currentHP}/{_maxHp}");
+
         GodMode(true);
         StartCoroutine(JarGodModeTimer());
         Debug.Log("무적타이머 시작");
@@ -180,6 +196,7 @@ public partial class Jar : MonoBehaviourPunCallbacks, IPunObservable
             if (prograssCor != null)
             {
                 StopCoroutine(prograssCor);
+                prograssCor=null;
             }
             SendStateRPC(JarState.WaterFilling);
             Debug.Log("물받기 시작");
@@ -187,27 +204,25 @@ public partial class Jar : MonoBehaviourPunCallbacks, IPunObservable
     }
 
 
+    //private void LeakTime()
+    //{
+    //    Debug.Log("물받기 중단 매서드 실행");
 
-    private void OnTriggerExit(Collider other)
-    {
-        if (other.gameObject.tag == "Water")
-        {
-            if (PhotonNetwork.IsMasterClient == false)
-                return;
+    //    if (PhotonNetwork.IsMasterClient == false)
+    //    {
+    //        Debug.Log("마스터 클라이언트 아님");
+    //        return;
+    //    }
 
-            if (_jarState == JarState.WaterFilling)
-            {
-                SendStateRPC(JarState.None);
-                Debug.Log("물받기 중단");
+    //    if (_jarState == JarState.None)
+    //    {
+    //        Debug.Log("마스터 클라이언트 아님");
+    //        return;
+    //    }
 
-                if (prograssCor != null)
-                {
-                    StopCoroutine(prograssCor);
-                }
-                prograssCor = StartCoroutine(LeakWaterTimer());
-            }
-        }
-    }
+    //    SendStateRPC(JarState.None);
+        
+    //}
 
     IEnumerator LeakWaterTimer()
     {
@@ -240,6 +255,7 @@ public partial class Jar : MonoBehaviourPunCallbacks, IPunObservable
         _currentWaterLv = Mathf.Clamp(_currentWaterLv, 0f, _maxWaterLv);
         OnWaterLV?.Invoke(this);
     }
+
     public void LeakWater()
     {
         if (PhotonNetwork.IsMasterClient == false)

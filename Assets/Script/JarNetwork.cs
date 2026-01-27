@@ -62,8 +62,7 @@ public partial class Jar : MonoBehaviourPunCallbacks, IPunObservable
             // 값이 실제로 바뀌었을 때만 UI 갱신
             if (!Mathf.Approximately(currentWaterLv, _currentWaterLv))
             {
-                
-                    OnWaterLV?.Invoke(this);
+                OnWaterLV?.Invoke(this);
             }
         }
     }
