@@ -7,7 +7,33 @@ public partial class Jar : MonoBehaviourPunCallbacks, IPunObservable
     [PunRPC]
     void RPC_JarState(JarState jarState)
     {
-        _jarState = jarState;
+        switch (jarState)
+        {
+            case JarState.WaterFilling:
+                StartFill();
+                break;
+
+            case JarState.LeakTime:
+                StartLeak();
+                break;
+
+            case JarState.None:
+                NoneState();
+                break;
+        }
+    }
+
+    private void StartFill()
+    {
+        _jarState = JarState.WaterFilling;
+    }
+    private void StartLeak()
+    {
+        _jarState = JarState.LeakTime;
+    }
+    private void NoneState()
+    {
+        _jarState = JarState.None;
     }
 
     void Master_GoalWater(GameObject jar)
@@ -22,6 +48,11 @@ public partial class Jar : MonoBehaviourPunCallbacks, IPunObservable
             return;
         }
         _presenter.wellModel.WellWaterPlus(_currentWaterLv);
+        if (this == null)
+        {
+            StopCoroutine(prograssCor);
+        }
+
         PhotonNetwork.Destroy(jar);
         _isDestroyed = true;
         Debug.Log("우물 - 항아리 제거");
@@ -38,7 +69,13 @@ public partial class Jar : MonoBehaviourPunCallbacks, IPunObservable
         {
             return;
         }
+        SoundManager.Instance.SoundPlay(Sound.JarDestroy);
         _gameSceneManager.JarCout(jar);
+        if (this == null)
+        {
+            StopCoroutine(prograssCor);
+        }
+
         PhotonNetwork.Destroy(jar);
         _isDestroyed = true;
     }

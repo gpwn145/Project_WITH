@@ -1,7 +1,9 @@
 ﻿using Photon.Pun;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Rendering;
 using UnityEngine.SceneManagement;
 
 public partial class GameSceneManager : MonoBehaviourPunCallbacks
@@ -17,12 +19,8 @@ public partial class GameSceneManager : MonoBehaviourPunCallbacks
     [Header("스테이지 프리팹")]
     [SerializeField] private List<GameObject> _stagePrefabs = new List<GameObject>();
 
-
     [Header("프레젠터")]
     [SerializeField] public Presenter presenter;
-
-    //게임에 존재하는 플레이어 리스트-필요함..
-    private List<GameObject> IngamePlayerList = new List<GameObject>();
 
     //저장 정보 불러오기
     private GameManager _gameManager;
@@ -37,20 +35,20 @@ public partial class GameSceneManager : MonoBehaviourPunCallbacks
     //스테이지 정보 변수
     private string roomID;
     private int joinPlayerNum;
+    public bool _isOpen = false;
 
     public event Action<Vector3> OnStageSet;
     public event Action<PlayerScript> OnGrab;
     public event Action<Jar> OnGrabTargetJar;
     public event Action<Jar> OnGrabOrPut;
 
-    private void Awake()
-    {
-        _gameManager = GameManager.Instance;
-    }
-
     private void Start()
     {
-        Init();
+        Cursor.lockState = CursorLockMode.Locked;
+        Cursor.visible = false;
+        SoundManager.Instance.SoundPlay(Sound.InGameBGM);
+
+        StartCoroutine(WaitForPhotonAndInit());
     }
 
     public void Init()
@@ -67,6 +65,22 @@ public partial class GameSceneManager : MonoBehaviourPunCallbacks
             jarSpawnScript[i].JarSetting();
         }
         PlayerSpawn();
+
+        if (props.ContainsKey("SoundVolum") == true)
+        {
+            SoundManager.Instance.audioSource.volume = (float)props["SoundVolum"];
+        }
+    }
+
+    private IEnumerator WaitForPhotonAndInit()
+    {
+        yield return new WaitUntil(() =>
+            PhotonNetwork.InRoom &&
+            GameManager.Instance != null
+        );
+
+        _gameManager = GameManager.Instance;
+        Init();
     }
 
     private void GetStage()
@@ -99,17 +113,18 @@ public partial class GameSceneManager : MonoBehaviourPunCallbacks
     {
         _actorNum = PhotonNetwork.LocalPlayer.ActorNumber - 1;
         GameObject player = PhotonNetwork.Instantiate(
-        "Player",
+        $"Player",
         repawnPos[_actorNum].transform.position,
         transform.rotation
         );
-        IngamePlayerList.Add(player);
+        player.name = $"Player{PhotonNetwork.LocalPlayer.ActorNumber - 1}";
         player.GetComponent<PlayerScript>().playerNum = _actorNum;
-    }
 
+    }
 
     public void ReSpawnPlayer(GameObject player, GameObject jar)
     {
+        SoundManager.Instance.SoundPlay(Sound.PlayerRespwan);
         player.transform.position = repawnPos[_actorNum].transform.position;
         if (jar != null)
         {
@@ -164,26 +179,60 @@ public partial class GameSceneManager : MonoBehaviourPunCallbacks
                 );
 
         stageMap.StageNumber++;
-        _gameManager.UpdateStageClearInfo(stageMap.StageNumber);
+        _gameManager.UpdateStageClearInfo(
+            stageMap.StageNumber, 
+            presenter.view.rotateSlider.value,
+            presenter.view.soundSlider.value
+            );
         
         Debug.Log($"스테이지 클리어 : {stageMap.StageNumber}");
     }   
 
     public void Restart()
     {
+        if (!PhotonNetwork.IsMasterClient) return;
+
+        photonView.RPC(
+                nameof(RPC_Restart),
+                RpcTarget.All
+                );
+    }
+
+    public void BeforeGotoRoom()
+    {
+        Debug.Log($"스테이지 정보 저장");
+        SoundManager.Instance.isPlayBGM = false;
+        _gameManager.SaveFirebase();
+        _gameManager.MouseSpeed(presenter.view.rotateSlider.value);
+    }
+
+    [PunRPC]
+    public void RPC_Restart()
+    {
         //우물 초기화.
         presenter.wellModel.CurrentWater = 0;
         //깨진 항아리 초기화
         destroyJarNumber = 0;
-        //플레이어 위치 초기화
-        for (int i = 0; i < IngamePlayerList.Count; i++)
-        {
-            IngamePlayerList[i].GetComponent<PlayerScript>().Restert();
-        }
         presenter.view.Init();
 
-        //시간 초기화
+        PlayerScript myPlayer = null;
+
+        PlayerScript[] players = FindObjectsByType<PlayerScript>(FindObjectsSortMode.None);
+        foreach(PlayerScript player in players)
+        {
+            if(player.photonView.IsMine == true)
+            {
+                myPlayer = player;
+                break;
+            }
+        }
+
+        if(myPlayer != null)
+        {
+            myPlayer.Restert();
+        }
     }
+
     public void NextStage()
     {
         if (!PhotonNetwork.IsMasterClient) return;

@@ -29,9 +29,10 @@ public partial class Jar : MonoBehaviourPunCallbacks, IPunObservable
     private bool _isGodMode;
     //private bool _isCoroutineStart = false;
     private Rigidbody _rigid;
-    private Coroutine prograssCor;
+    public Coroutine prograssCor;
     private bool _isDestroyed = false;
     public JarSpwaner jarSpwaner;
+    private Coroutine waterFillCoroutine;
 
     const int LAYER_JarSpawn = 6;
     const int LAYER_JarPlayer = 7;
@@ -39,7 +40,7 @@ public partial class Jar : MonoBehaviourPunCallbacks, IPunObservable
 
     public event Action<Jar> OnWaterLV;
 
-    public float MaxWaterLv => _maxWaterLv;
+    public float MaxWaterLv { get { return _maxWaterLv; } set { _maxWaterLv = value; } }
     public float CurrentWaterLv => _currentWaterLv;
     public int MaxHp => _maxHp;
 
@@ -92,7 +93,14 @@ public partial class Jar : MonoBehaviourPunCallbacks, IPunObservable
             return;
         }
 
-        SendStateRPC(JarState.None);
+        if (waterFillCoroutine != null)
+        {
+            StopCoroutine(waterFillCoroutine);
+            waterFillCoroutine = null;
+        }
+        
+        if(this == null) return;
+
         prograssCor = StartCoroutine(LeakWaterTimer());
         Debug.Log("물샘 타이머 시작");
     }
@@ -101,6 +109,7 @@ public partial class Jar : MonoBehaviourPunCallbacks, IPunObservable
     {
         if (_gameSceneManager._isSceneChanging) return;
         if (_isDestroyed) return;
+        if (this == null) return;
         if (photonView == null) return;
         if (PhotonNetwork.IsMasterClient == false)
         {
@@ -143,6 +152,10 @@ public partial class Jar : MonoBehaviourPunCallbacks, IPunObservable
         {
             return;
         }
+
+        if (this == null) return;
+
+        SoundManager.Instance.SoundPlay(Sound.JarDamaged);
 
         _currentHP -= 1;
 
@@ -224,8 +237,9 @@ public partial class Jar : MonoBehaviourPunCallbacks, IPunObservable
         
     //}
 
-    IEnumerator LeakWaterTimer()
+    public IEnumerator LeakWaterTimer()
     {
+        SendStateRPC(JarState.None);
         yield return new WaitForSeconds(2f);
         SendStateRPC(JarState.LeakTime);
         Debug.Log("물새기 시작");
@@ -251,9 +265,23 @@ public partial class Jar : MonoBehaviourPunCallbacks, IPunObservable
             Debug.Log($"항아리 물 {_currentWaterLv}/{_maxWaterLv}");
             return;
         }
+
+        if(waterFillCoroutine == null)
+        {
+            waterFillCoroutine = StartCoroutine(FillSoundCoroutine());
+        }
         _currentWaterLv += 1f * Time.deltaTime;
         _currentWaterLv = Mathf.Clamp(_currentWaterLv, 0f, _maxWaterLv);
         OnWaterLV?.Invoke(this);
+    }
+
+    IEnumerator FillSoundCoroutine()
+    {
+        while (true)
+        {
+            SoundManager.Instance.SoundPlay(Sound.WaterFill);
+            yield return new WaitForSeconds(0.7f);
+        }
     }
 
     public void LeakWater()
@@ -261,7 +289,7 @@ public partial class Jar : MonoBehaviourPunCallbacks, IPunObservable
         if (PhotonNetwork.IsMasterClient == false)
             return;
 
-        _currentWaterLv -= 1f * Time.deltaTime;
+        _currentWaterLv -= 0.2f * Time.deltaTime;
         _currentWaterLv = Mathf.Clamp(_currentWaterLv, 0f, _maxWaterLv);
 
         if (_currentWaterLv <= 1f)

@@ -65,6 +65,7 @@ public partial class PlayerScript : MonoBehaviourPunCallbacks
     private void OnHoldAction(InputAction.CallbackContext ctx)
     {
         if (!photonView.IsMine) return;
+        if (_gameSceneManager._isOpen) return;
 
         if (_target != null && _hand == null)
         {
@@ -102,6 +103,7 @@ public partial class PlayerScript : MonoBehaviourPunCallbacks
     private void OnWaterButtonAction(InputAction.CallbackContext ctx)
     {
         if (!photonView.IsMine) return;
+        if (_gameSceneManager._isOpen) return;
 
         if (_target != null && _hand == null && _target.tag == "Button")
         {
@@ -131,6 +133,7 @@ public partial class PlayerScript : MonoBehaviourPunCallbacks
     private void OnThorowAction(InputAction.CallbackContext ctx)
     {
         if (!photonView.IsMine) return;
+        if (_gameSceneManager._isOpen) return;
 
         if (ctx.performed)
         {
@@ -156,9 +159,13 @@ public partial class PlayerScript : MonoBehaviourPunCallbacks
         Rigidbody jarRigid = _hand.transform.GetComponent<Rigidbody>();
         Collider jarColl = _hand.transform.GetComponent<Collider>();
 
-
         _hand.transform.SetParent(null);
-        _hand.GetComponent<Jar>()._jarState = JarState.None;
+        Jar jarScript = _hand.GetComponent<Jar>();
+        if(_hand.GetComponent<Jar>()._jarState == JarState.WaterFilling)
+        {
+            jarScript._jarState = JarState.None;
+            jarScript.prograssCor = StartCoroutine(jarScript.LeakWaterTimer());
+        }
 
         jarColl.enabled = true;
 
@@ -187,8 +194,13 @@ public partial class PlayerScript : MonoBehaviourPunCallbacks
         Collider jarColl = _hand.transform.GetComponent<Collider>();
         gameObject.layer = LAYER_JarPlayer; 
         _hand.layer = LAYER_JarPlayer;
-        _hand.GetComponent<Jar>()._jarState = JarState.None;
 
+        Jar jarScript = _hand.GetComponent<Jar>();
+        if (_hand.GetComponent<Jar>()._jarState == JarState.WaterFilling)
+        {
+            jarScript._jarState = JarState.None;
+            jarScript.prograssCor = StartCoroutine(jarScript.LeakWaterTimer());
+        }
         jarRigid.isKinematic = true;
         jarRigid.useGravity = false;
         jarRigid.detectCollisions = true;
@@ -203,8 +215,13 @@ public partial class PlayerScript : MonoBehaviourPunCallbacks
         Rigidbody jarRigid = _hand.transform.GetComponent<Rigidbody>();
         Collider jarColl = _hand.transform.GetComponent<Collider>();
         gameObject.layer = 0;
-        _hand.GetComponent<Jar>()._jarState = JarState.None;
 
+        Jar jarScript = _hand.GetComponent<Jar>();
+        if (_hand.GetComponent<Jar>()._jarState == JarState.WaterFilling)
+        {
+            jarScript._jarState = JarState.None;
+            jarScript.prograssCor = StartCoroutine(jarScript.LeakWaterTimer());
+        }
         jarRigid.isKinematic = false;
         jarRigid.useGravity = true;
         jarRigid.detectCollisions = true;

@@ -45,7 +45,7 @@
                 {
                     "name": "ESC",
                     "type": "Button",
-                    "id": "89f0b1a8-07be-4c86-99d6-bf3c837d4988",
+                    "id": "158ab8a4-e3c1-4592-83c9-e51f969fad0b",
                     "expectedControlType": "",
                     "processors": "",
                     "interactions": "",
@@ -198,7 +198,35 @@
                 },
                 {
                     "name": "",
-                    "id": "a1a2172a-b6b1-4b65-9e3e-576175b6cdfc",
+                    "id": "7762f6e4-d517-41b2-aa49-5f6fa868e3c5",
+                    "path": "<Keyboard>/escape",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "ESC",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                }
+            ]
+        },
+        {
+            "name": "UI",
+            "id": "d97400d5-7126-4174-823a-99f8e1cd3505",
+            "actions": [
+                {
+                    "name": "ESC",
+                    "type": "Button",
+                    "id": "aae3a90f-7ecd-4371-bfae-d709c33843c2",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                }
+            ],
+            "bindings": [
+                {
+                    "name": "",
+                    "id": "1a5d554b-04f4-49a1-8ebb-adf269677e3d",
                     "path": "<Keyboard>/escape",
                     "interactions": "",
                     "processors": "",

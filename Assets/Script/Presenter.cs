@@ -23,6 +23,9 @@ public class Presenter : MonoBehaviour
     [Header("메뉴")]
     [SerializeField] public GameObject menuPanel;
 
+    [Header("카메라 관련")]
+    [SerializeField] public FollowCamera followCamera;
+
 
     private Jar _jarScript;
     private GameObject _targetJar;
@@ -161,6 +164,9 @@ public class Presenter : MonoBehaviour
 
     public void JarTaken(JarSpwaner jarSpwaner)
     {
+        if (PhotonNetwork.IsMasterClient == false)
+            return;
+
         if (jarSpwaner == null)
         {
             Debug.LogError("항아리 스포너 없음");
@@ -186,7 +192,10 @@ public class Presenter : MonoBehaviour
     //스테이지 클리어 > 각자
     public void ClearStage()
     {
+        SoundManager.Instance.SoundPlay(Sound.Clear);
         _clearPanel.SetActive(true);
+        Cursor.lockState = CursorLockMode.None;
+        Cursor.visible = true;
     }
 
     public void SetStageInfo(int stageNum, string stageName)

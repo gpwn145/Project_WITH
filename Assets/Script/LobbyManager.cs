@@ -1,6 +1,5 @@
 ﻿using UnityEngine;
 using Photon.Pun;
-using System.Collections;
 using UnityEngine.UI;
 using System.Collections.Generic;
 using Photon.Realtime;
@@ -10,12 +9,22 @@ public class LobbyManager : MonoBehaviourPunCallbacks
     [SerializeField,Range(2,4)] private int _maxPlayers = 2;
     [SerializeField] private Text _inputRoomID;
     private List<RoomInfo> _roomList = new List<RoomInfo>();
+
+    private void Start()
+    {
+        SoundManager.Instance.SoundPlay(Sound.LobbyBGM);
+    }
     public void OnCreateRoomButton()
     {
+        SoundManager.Instance.SoundPlay(Sound.BaseButtonClick);
         PhotonNetwork.CreateRoom(
             null, 
             new Photon.Realtime.RoomOptions { MaxPlayers = _maxPlayers}
             );
+    }
+    public void OnJoinPanelButton()
+    {
+        SoundManager.Instance.SoundPlay(Sound.SettingPanelOpen);
     }
 
     public override void OnRoomListUpdate(List<RoomInfo> roomList)
@@ -45,6 +54,7 @@ public class LobbyManager : MonoBehaviourPunCallbacks
     //참여하기 버튼
     public void OnJoinRoomButton()
     {
+        SoundManager.Instance.SoundPlay(Sound.BaseButtonClick);
         PhotonNetwork.JoinRoom(_inputRoomID.text);
         Debug.Log($"{_inputRoomID.text}");
     }

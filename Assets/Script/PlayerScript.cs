@@ -1,8 +1,6 @@
 ﻿using Photon.Pun;
-using Photon.Pun.Demo.PunBasics;
 using System;
 using System.Collections;
-using UnityEditor;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -62,13 +60,18 @@ public partial class PlayerScript : MonoBehaviourPunCallbacks
         _waterButtonAction = _playerMap.FindAction("Water");
         _ESCAction = _playerMap.FindAction("ESC");
 
-        _presenter = GameObject.Find("InGameUI").GetComponent<Presenter>();
-        _gameSceneManager = _presenter._gameSceneManager;
+        _gameSceneManager = FindAnyObjectByType<GameSceneManager>();
+        _presenter = _gameSceneManager.presenter;
         _rewpawnPos = _presenter._gameSceneManager.repawnPos[0];
     }
 
     private void Start()
     {
+        if (_presenter == null)
+        {
+            _presenter = GameObject.Find("InGameUI").GetComponent<Presenter>();
+        }
+
         if (!photonView.IsMine) return;
         Renderer renderer = GetComponent<Renderer>();
 
@@ -183,22 +186,40 @@ public partial class PlayerScript : MonoBehaviourPunCallbacks
     {
         if (!photonView.IsMine) return;
 
-        if (ctx.performed)
+        if (!ctx.performed) return;
+
+        bool isPanelOpen = _presenter.menuPanel.activeSelf;
+        _presenter.menuPanel.SetActive(!isPanelOpen);
+
+        //패널 닫기
+        if (isPanelOpen)
         {
-            if(_presenter.menuPanel.activeSelf == true)
-            { 
-                _presenter.menuPanel.SetActive(false);
-            }
-            if(_presenter.menuPanel.activeSelf == false)
-            { 
-                _presenter.menuPanel.SetActive(true);
-            }
+            SoundManager.Instance.SoundPlay(Sound.SettingPanelClose);
+            Debug.Log($"마우스 커서 숨기기");
+            Cursor.lockState = CursorLockMode.Confined;
+            Cursor.visible = false;
+            _gameSceneManager._isOpen = false;
+            input = Vector2.zero;
+            Debug.Log($"<color=red>패널 활성화 여부 {_gameSceneManager._isOpen}</color>");
+
+            GameManager.Instance.MouseSpeed(_presenter.view.rotateSlider.value);
+        }
+        //패널 켜기
+        else
+        {
+            SoundManager.Instance.SoundPlay(Sound.SettingPanelOpen);
+            Debug.Log($"마우스 커서 보이기");
+            Cursor.lockState = CursorLockMode.None;
+            Cursor.visible = true;
+            _gameSceneManager._isOpen = true;
+            Debug.Log($"<color=red>패널 활성화 여부 {_gameSceneManager._isOpen}</color>");
         }
     }
 
     private void OnMove(InputAction.CallbackContext ctx)
     {
         if (!photonView.IsMine) return;
+        if (_gameSceneManager._isOpen) return;
 
         if (ctx.performed)
         {
@@ -230,9 +251,11 @@ public partial class PlayerScript : MonoBehaviourPunCallbacks
             {
                 return;
             }
-
+            SoundManager.Instance.SoundPlay(Sound.PlayerBumped);
             BackMove(collision);
             StartCoroutine(WaitTime());
+
+            if (_hand.gameObject.GetComponent<Jar>() == null) return;
 
             if (gameObject.layer == LAYER_JarPlayer)
             {
@@ -258,6 +281,7 @@ public partial class PlayerScript : MonoBehaviourPunCallbacks
     public void Restert()
     {
         if (!photonView.IsMine) return;
+        SoundManager.Instance.SoundPlay(Sound.PlayerRespwan);
         _gameSceneManager.ReSpawnPlayer(gameObject, _hand);
     }
 }

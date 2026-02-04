@@ -208,6 +208,7 @@ public partial class PlayerScript : MonoBehaviourPunCallbacks
         {
             case ActionType.Grab:
                 {
+                    SoundManager.Instance.SoundPlay(Sound.JarPickUp);
                     GrabJar(_hand.GetComponent<Jar>().jarSpwaner);
                     _gameSceneManager.GSGrab(this);
                     _gameSceneManager.GSGrabTargetJar(_hand.GetComponent<Jar>());
@@ -218,6 +219,7 @@ public partial class PlayerScript : MonoBehaviourPunCallbacks
                 break;
             case ActionType.Throw:
                 {
+                    SoundManager.Instance.SoundPlay(Sound.JarThrow);
                     jarPV.TransferOwnership(PhotonNetwork.MasterClient);
 
                     _hand.gameObject.GetComponent<Jar>().GodMode(false);
@@ -231,6 +233,7 @@ public partial class PlayerScript : MonoBehaviourPunCallbacks
                 break;
             case ActionType.Put:
                 {
+                    SoundManager.Instance.SoundPlay(Sound.JarPutDown);
                     jarPV.TransferOwnership(PhotonNetwork.MasterClient);
 
                     _hand.gameObject.GetComponent<Jar>().GodMode(true);

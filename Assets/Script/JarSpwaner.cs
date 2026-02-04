@@ -34,8 +34,12 @@ public class JarSpwaner : MonoBehaviourPunCallbacks
             );
         Debug.Log("항아리 생성");
 
-        jar.GetComponent<Jar>().jarSpwaner = this;
-        jar.GetComponent<Jar>().jarSpwaner.hasJar = true;
+        Jar jarScript = jar.GetComponent<Jar>();
+        System.Random random = new System.Random();
+
+        jarScript.MaxWaterLv = random.Next(2, 8);
+        jarScript.jarSpwaner = this;
+        jarScript.jarSpwaner.hasJar = true;
 
         //for (int i = 0; i < jarSpawnPos.Count; i++)
         //{

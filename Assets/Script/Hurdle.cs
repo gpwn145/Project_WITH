@@ -18,13 +18,28 @@ public class Hurdle : MonoBehaviourPunCallbacks
         _rigidbody = GetComponent<Rigidbody>();
     }
 
+    //private void FixedUpdate()
+    //{
+    //    if (!photonView.IsMine) return;
+
+    //    if (isBack == true)
+    //    {
+    //        if (_rigidbody.linearVelocity.magnitude < 0.1f)
+    //        {
+    //            isBack = false;
+    //            _rigidbody.angularVelocity = Vector3.zero;
+    //            Debug.Log("입력 활성화");
+    //        }
+    //        return;
+    //    }
+    //}
+
     private void OnCollisionEnter(Collision collision)
     {
         if (collision.gameObject.tag == "Player" || collision.gameObject.tag == "Hurdle" || collision.gameObject.tag == "Jar")
         {
             isBack = true;
             Debug.Log("입력 비활성화");
-
             if (isWaiting == true)
             {
                 return;
